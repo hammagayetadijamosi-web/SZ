@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<!-- 
+  index.html
+  Frontend for Telegram Mini App Ecosystem (v2.0)
+  Design System: iOS 26 Liquid Glass (Premium Space Theme)
+  Author: Antigravity AI
+  Date: 2026-06-28
+-->
+<html lang="uz" class="h-full select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Hammaga Yetadi</title>
+  
+  <!-- Tailwind CSS 3.x CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Telegram WebApp JS SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            iosBlue: '#007AFF',
+            iosGreen: '#30D158',
+            iosOrange: '#FF9F0A',
+            iosRed: '#FF453A',
+            spaceBg: '#0A0A0F',
+          },
+          fontFamily: {
+            sans: [
+              '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 
+              '"Helvetica Neue"', 'Arial', 'sans-serif'
+            ],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom CSS for Premium iOS 26 Liquid Glass Effects */
+    body {
+      background-color: #0A0A0F;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(142, 68, 173, 0.12) 0%, transparent 40%);
+      background-attachment: fixed;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(30px) saturate(200%) brightness(1.05);
+      -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.05);
+      border: 0.5px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 
+        0 0 0 0.5px rgba(255, 255, 255, 0.05) inset,
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 1px 0 rgba(255, 255, 255, 0.1) inset;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .glass-card:active {
+      transform: scale(0.99);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Subtly glowing accent buttons */
+    .btn-primary {
+      background: #007AFF;
+      box-shadow: 
+        0 4px 14px rgba(0, 122, 255, 0.35),
+        0 0 0 0.5px rgba(255, 255, 255, 0.2) inset;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+      background: #0062CC;
+      box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 0.5px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:active {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+    }
+
+    /* Keyframe animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 15px rgba(0, 122, 255, 0.6)); }
+    }
+
+    .logo-pulse {
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    /* Toast animation */
+    @keyframes slideUp {
+      from { transform: translate(-50%, 100%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+    .toast-animate {
+      animation: slideUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Hide scrollbars for clean UI */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border-left-color: #ffffff;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="h-full text-white overflow-y-auto no-scrollbar pb-10">
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 1: LOADING SCREEN
+       ═══════════════════════════════════════ -->
+  <div id="screen-loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0A0F]">
+    <div class="flex flex-col items-center space-y-6">
+      <!-- Pulsing Liquid Glass Logo -->
+      <div class="w-24 h-24 rounded-[28px] bg-gradient-to-tr from-iosBlue to-purple-600 flex items-center justify-center logo-pulse shadow-lg shadow-iosBlue/30 border border-white/20">
+        <span class="text-4xl font-bold tracking-wider text-white">H</span>
+      </div>
+      <div class="text-center space-y-2">
+        <h1 class="text-2xl font-semibold tracking-tight">Hammaga Yetadi</h1>
+        <p class="text-sm text-white/40 font-medium">Yuklanmoqda...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 2: SUBSCRIPTION GATE
+       ═══════════════════════════════════════ -->
+  <div id="screen-subscription" class="hidden fixed inset-0 z-40 flex items-center justify-center p-6 bg-[#0A0A0F]/90 backdrop-blur-md">
+    <div class="glass-card w-full max-w-sm p-6 flex flex-col items-center text-center space-y-6">
+      <!-- Icon -->
+      <div class="w-16 h-16 rounded-2xl bg-iosBlue/10 border border-iosBlue/30 flex items-center justify-center text-3xl">
+        📢
+      </div>
+      <!-- Title & Text -->
+      <div class="space-y-2">
+        <h2 class="text-xl font-bold">Kanalga qo'shiling</h2>
+        <p class="text-sm text-white/60 leading-relaxed">
+          Ilovadan to'liq foydalanish va takliflar uchun mukofot ballarini olish uchun rasmiy kanalimizga a'zo bo'ling.
+        </p>
+      </div>
+      <!-- Actions -->
+      <div class="w-full space-y-3">
+        <button id="btn-join-channel" class="btn-primary w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2">
+          <span>📢 Kanalga o'tish</span>
+        </button>
+        <button id="btn-verify" class="btn-secondary w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2">
+          <span id="btn-verify-text">✓ Tasdiqlash</span>
+          <div id="btn-verify-spinner" class="spinner hidden"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 3: MAIN DASHBOARD
+       ═══════════════════════════════════════ -->
+  <div id="screen-dashboard" class="hidden px-4 pt-6 max-w-md mx-auto space-y-6">
+    
+    <!-- 3a. Header Section -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-y-1 gap-3">
+        <!-- User Initials Avatar -->
+        <div id="user-avatar" class="w-11 h-11 rounded-full bg-gradient-to-tr from-iosBlue to-purple-600 flex items-center justify-center font-bold text-sm border border-white/20 shadow-md">
+          U
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span id="user-name" class="font-semibold text-base leading-none">Foydalanuvchi</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-iosGreen animate-ping"></span>
+          </div>
+          <span id="user-username" class="text-xs text-white/40">@username</span>
+        </div>
+      </div>
+      <!-- Active Status Badge -->
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-iosGreen/10 border border-iosGreen/30 text-iosGreen flex items-center gap-1">
+        ✓ Faol
+      </span>
+    </div>
+
+    <!-- 3b. Points Balance Card (Hero Card) -->
+    <div class="glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden">
+      <!-- Ambient decorative glow -->
+      <div class="absolute -top-10 -left-10 w-24 h-24 bg-iosBlue/20 rounded-full blur-2xl"></div>
+      <div class="absolute -bottom-10 -right-10 w-24 h-24 bg-purple-600/20 rounded-full blur-2xl"></div>
+
+      <span class="text-xs font-semibold tracking-wider text-white/40 uppercase">Balans</span>
+      <div class="flex items-baseline mt-1">
+        <span id="balance-points" class="text-5xl font-bold tracking-tight">0</span>
+        <span class="text-lg font-medium text-white/60 ml-1.5">ball</span>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid grid-cols-2 w-full mt-6 pt-4 border-t border-white/10 text-center">
+        <div class="border-r border-white/10">
+          <span class="text-[10px] uppercase tracking-wider text-white/40">Takliflar</span>
+          <p id="stat-referrals" class="text-lg font-semibold mt-0.5">0</p>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase tracking-wider text-white/40">Reyting</span>
+          <p id="stat-rank" class="text-lg font-semibold mt-0.5">-</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3c. Referral Section Card -->
+    <div class="glass-card p-5 space-y-4">
+      <div class="space-y-1">
+        <h3 class="font-bold text-sm">Do'stlarni taklif qiling</h3>
+        <p class="text-xs text-white/55">Har bir taklif qilingan do'stingiz uchun 50 ball oling.</p>
+      </div>
+
+      <!-- Link Display Box -->
+      <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono select-all overflow-hidden text-ellipsis whitespace-nowrap">
+        <span id="ref-link-text" class="text-white/70 overflow-hidden text-ellipsis mr-2">Yuklanmoqda...</span>
+      </div>
+
+      <!-- Copy & Share Buttons -->
+      <div class="grid grid-cols-2 gap-3">
+        <button id="btn-copy" class="btn-secondary py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5">
+          <span>🔗 Nusxalash</span>
+        </button>
+        <button id="btn-share" class="btn-primary py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5">
+          <span>📤 Ulashish</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3d. How It Works Section -->
+    <div class="glass-card p-5 space-y-4">
+      <h3 class="font-bold text-sm">Tizim qanday ishlaydi?</h3>
+      <div class="space-y-3.5">
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-white/5 border border-white/12 flex items-center justify-center text-xs font-bold shrink-0">1</div>
+          <p class="text-xs text-white/70 leading-relaxed">Shaxsiy taklif havolangizni do'stlaringizga yuboring.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-white/5 border border-white/12 flex items-center justify-center text-xs font-bold shrink-0">2</div>
+          <p class="text-xs text-white/70 leading-relaxed">Do'stingiz taklif havolangiz orqali kirib, kanalimizga a'zo bo'lsin.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-6 h-6 rounded-full bg-white/5 border border-white/12 flex items-center justify-center text-xs font-bold shrink-0">3</div>
+          <p class="text-xs text-white/70 leading-relaxed">Do'stingiz a'zo bo'lgach, sizga <strong class="text-iosBlue">50 ball</strong>, do'stingizga <strong class="text-iosGreen">10 ball</strong> taqdim etiladi!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3e. Leaderboard Section -->
+    <div class="glass-card p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-sm">Top Taklifchilar 🏆</h3>
+        <button id="btn-expand-leaderboard" class="text-xs text-iosBlue font-medium active:opacity-70">Hammasi →</button>
+      </div>
+
+      <!-- Leaderboard List -->
+      <div id="leaderboard-list" class="space-y-2.5">
+        <!-- Will be filled by JS -->
+        <div class="text-center py-4 text-xs text-white/30">Yuklanmoqda...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       TOAST NOTIFICATION SYSTEM
+       ═══════════════════════════════════════ -->
+  <div id="toast-container" class="fixed left-1/2 bottom-8 -translate-x-1/2 z-50 w-[90%] max-w-xs pointer-events-none space-y-2">
+    <!-- Toasts will be dynamically appended here -->
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       JAVASCRIPT LOGIC
+       ═══════════════════════════════════════ -->
+  <script>
+    // ─── CONFIGURATION ────────────────────────────────────────────────
+    const API_BASE = 'https://dgdgjdd.pythonanywhere.com';
+    const CHANNEL_URL = 'https://t.me/hammagayetadi';
+    const BOT_USERNAME = 'hammagayetadi_bot';
+    const APP_NAME = 'hammagayetadi';
+
+
+    // ─── STATE MANAGEMENT ─────────────────────────────────────────────
+    const STATE = {
+      user: null,
+      isMember: false,
+      leaderboard: [],
+      fullLeaderboardMode: false,
+      isLoading: true
+    };
+
+    // ─── TELEGRAM WEB APP INIT ────────────────────────────────────────
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();                              // Expand to maximum height
+    tg.enableClosingConfirmation();           // Confirm before closing
+    tg.setHeaderColor('#0A0A0F');            // Match app background
+    tg.setBackgroundColor('#0A0A0F');
+
+    // ─── HAPTIC FEEDBACK HELPERS ──────────────────────────────────────
+    const haptic = {
+      light:   () => { try { tg.HapticFeedback.impactOccurred('light'); } catch(e){} },
+      medium:  () => { try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){} },
+      heavy:   () => { try { tg.HapticFeedback.impactOccurred('heavy'); } catch(e){} },
+      success: () => { try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){} },
+      warning: () => { try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){} },
+      error:   () => { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
+    };
+
+    // ─── INIT FLOW ────────────────────────────────────────────────────
+    async function init() {
+      showScreen('loading');
+      
+      const initData = tg.initData;             // Raw string for HMAC verification
+      // Retrieve referral code from Telegram deep link start_param
+      const startParam = tg.initDataUnsafe?.start_param ?? getQueryParam('startapp') ?? null;
+      
+      if (!initData) {
+        showErrorState("Telegram orqali kirish zarur");
+        return;
+      }
+      
+      try {
+        const res = await apiCall('/api/auth', 'POST', {
+          init_data: initData,
+          referral_code: startParam
+        });
+        
+        STATE.user = res.user;
+        STATE.isMember = res.is_member;
+        
+        if (STATE.isMember) {
+          renderDashboard();
+          showScreen('dashboard');
+          loadLeaderboard();  // Async load in background
+        } else {
+          showScreen('subscription');
+        }
+      } catch (err) {
+        showErrorState(err.message || "Tizimga bog'lanishda xatolik yuz berdi");
+      } finally {
+        // Minimum loading screen time of 1.5 seconds for premium feel
+        setTimeout(() => {
+          const loadingScreen = document.getElementById('screen-loading');
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => loadingScreen.classList.add('hidden'), 300);
+        }, 1200);
+      }
+    }
+
+    // ─── API LAYER ────────────────────────────────────────────────────
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      const url = API_BASE.replace(/\/$/, '') + endpoint;
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+      
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || "Noma'lum xatolik");
+        }
+        return data;
+      } catch (e) {
+        console.error("API Call failed:", e);
+        throw e;
+      }
+    }
+
+    // ─── VERIFY SUBSCRIPTION ─────────────────────────────────────────
+    async function verifySubscription() {
+      haptic.medium();
+      setButtonLoading('btn-verify', true);
+      
+      try {
+        const res = await apiCall('/api/verify', 'POST', {
+          init_data: tg.initData
+        });
+        
+        STATE.user = res.user;
+        STATE.isMember = true;
+        
+        haptic.success();
+        showToast("✅ Muvaffaqiyatli a'zo bo'lindi!", 'success');
+        
+        // Wait 1s for the toast to be readable, then transition
+        setTimeout(() => {
+          renderDashboard();
+          showScreen('dashboard');
+          loadLeaderboard();
+        }, 1000);
+        
+      } catch (err) {
+        haptic.error();
+        showToast(err.message || "Kanalga a'zolik tasdiqlanmadi", 'error');
+      } finally {
+        setButtonLoading('btn-verify', false);
+      }
+    }
+
+    // ─── LEADERBOARD ─────────────────────────────────────────────────
+    async function loadLeaderboard() {
+      try {
+        const res = await apiCall('/api/leaderboard');
+        STATE.leaderboard = res.leaderboard;
+        renderLeaderboard();
+      } catch (err) {
+        console.error("Failed to load leaderboard", err);
+      }
+    }
+
+    // ─── COPY REFERRAL LINK ──────────────────────────────────────────
+    async function copyReferralLink() {
+      haptic.light();
+      const link = document.getElementById('ref-link-text').textContent;
+      
+      try {
+        await navigator.clipboard.writeText(link);
+        showToast("✅ Havola nusxalandi!", 'success');
+        haptic.success();
+      } catch (err) {
+        // Fallback for some webview browsers
+        try {
+          tg.showPopup({
+            title: "Havola",
+            message: link,
+            buttons: [{type: "close", text: "Yopish"}]
+          });
+        } catch(e) {
+          showToast("Nusxalash imkoni bo'lmadi", 'error');
+        }
+      }
+    }
+
+    // ─── SHARE VIA TELEGRAM ──────────────────────────────────────────
+    function shareReferralLink() {
+      haptic.medium();
+      const link = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${STATE.user.telegram_id}`;
+      const text = `Do'stim, bu ajoyib ilovaga qo'shil va ballarga ega bo'l! 🎁\n\n${link}`;
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+      tg.openTelegramLink(shareUrl);
+    }
+
+    // ─── UI RENDER HELPERS ────────────────────────────────────────────
+    
+    function showScreen(screenId) {
+      // Hide all screens
+      document.getElementById('screen-subscription').classList.add('hidden');
+      document.getElementById('screen-dashboard').classList.add('hidden');
+      
+      // Show requested screen
+      if (screenId === 'subscription') {
+        document.getElementById('screen-subscription').classList.remove('hidden');
+      } else if (screenId === 'dashboard') {
+        document.getElementById('screen-dashboard').classList.remove('hidden');
+        
+        // Show Telegram Native Main Button in Dashboard
+        tg.MainButton.setParams({
+          text: "📤 Ulashish",
+          color: "#007AFF",
+          text_color: "#FFFFFF",
+          is_active: true,
+          is_visible: true
+        });
+        tg.MainButton.onClick(shareReferralLink);
+      }
+    }
+
+    function renderDashboard() {
+      if (!STATE.user) return;
+      
+      // Setup Avatar (Initials)
+      const name = STATE.user.first_name || "Foydalanuvchi";
+      const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+      document.getElementById('user-avatar').textContent = initials;
+      
+      // Set User Texts
+      document.getElementById('user-name').textContent = name;
+      document.getElementById('user-username').textContent = STATE.user.username ? `@${STATE.user.username}` : '';
+      
+      // Set Balance and Stats
+      document.getElementById('balance-points').textContent = formatNumber(STATE.user.points);
+      document.getElementById('stat-referrals').textContent = formatNumber(STATE.user.referral_count);
+      
+      // Set Referral Link text
+      const refLink = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${STATE.user.telegram_id}`;
+      document.getElementById('ref-link-text').textContent = refLink;
+
+      // Calculate Rank
+      determineUserRank();
+    }
+
+    function determineUserRank() {
+      if (STATE.leaderboard.length === 0) return;
+      const myId = STATE.user.telegram_id;
+      // Note: Leaderboard items returned from API do not include telegram_id for privacy,
+      // but we can find our position if we match username or points.
+      let rank = "-";
+      for (let i = 0; i < STATE.leaderboard.length; i++) {
+        const item = STATE.leaderboard[i];
+        // Match by username or if points match and we are in the list
+        if (STATE.user.username && item.username === `@${STATE.user.username}`) {
+          rank = item.rank;
+          break;
+        }
+      }
+      document.getElementById('stat-rank').textContent = rank !== "-" ? `#${rank}` : '-';
+    }
+
+    function renderLeaderboard() {
+      const container = document.getElementById('leaderboard-list');
+      container.innerHTML = '';
+      
+      const listToRender = STATE.fullLeaderboardMode 
+        ? STATE.leaderboard 
+        : STATE.leaderboard.slice(0, 5);
+        
+      if (listToRender.length === 0) {
+        container.innerHTML = `<div class="text-center py-4 text-xs text-white/30">Hozircha ma'lumot yo'q</div>`;
+        return;
+      }
+      
+      listToRender.forEach(item => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 text-xs";
+        
+        // Rank display
+        let rankBadge = '';
+        if (item.rank === 1) {
+          rankBadge = `<span class="w-6 h-6 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/40 text-[#FFD700] flex items-center justify-center font-bold">1</span>`;
+        } else if (item.rank === 2) {
+          rankBadge = `<span class="w-6 h-6 rounded-full bg-[#C0C0C0]/20 border border-[#C0C0C0]/40 text-[#C0C0C0] flex items-center justify-center font-bold">2</span>`;
+        } else if (item.rank === 3) {
+          rankBadge = `<span class="w-6 h-6 rounded-full bg-[#CD7F32]/20 border border-[#CD7F32]/40 text-[#CD7F32] flex items-center justify-center font-bold">3</span>`;
+        } else {
+          rankBadge = `<span class="w-6 h-6 rounded-full bg-white/5 border border-white/10 text-white/50 flex items-center justify-center font-semibold">${item.rank}</span>`;
+        }
+        
+        const displayName = item.first_name;
+        const displayUsername = item.username ? `<span class="text-[10px] text-white/40 block">${item.username}</span>` : '';
+        
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            ${rankBadge}
+            <div class="flex flex-col">
+              <span class="font-medium">${displayName}</span>
+              ${displayUsername}
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="font-bold text-white">${formatNumber(item.points)}</span>
+            <span class="text-[10px] text-white/40 block">${formatNumber(item.referral_count)} do'st</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      // Update Rank in Stats Card if we are loaded
+      determineUserRank();
+    }
+
+    // ─── TOAST SYSTEM ────────────────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      
+      const toast = document.createElement('div');
+      toast.className = `toast-animate w-full p-4 rounded-2xl text-xs font-semibold text-white flex items-center gap-3 shadow-lg border border-white/10 backdrop-blur-md`;
+      
+      let bgClass = 'bg-[#0A0A0F]/80';
+      let borderLeft = 'border-l-4 border-l-iosBlue';
+      
+      if (type === 'success') {
+        borderLeft = 'border-l-4 border-l-iosGreen';
+      } else if (type === 'error') {
+        borderLeft = 'border-l-4 border-l-iosRed';
+      } else if (type === 'warning') {
+        borderLeft = 'border-l-4 border-l-iosOrange';
+      }
+      
+      toast.className += ` ${bgClass} ${borderLeft}`;
+      toast.textContent = message;
+      
+      container.appendChild(toast);
+      
+      // Auto dismiss after 3 seconds
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, 20px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function setButtonLoading(buttonId, isLoading) {
+      const btn = document.getElementById(buttonId);
+      const text = document.getElementById(`${buttonId}-text`);
+      const spinner = document.getElementById(`${buttonId}-spinner`);
+      
+      if (isLoading) {
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
+        if (text) text.classList.add('hidden');
+        if (spinner) spinner.classList.remove('hidden');
+      } else {
+        btn.style.pointerEvents = 'auto';
+        btn.style.opacity = '1';
+        if (text) text.classList.remove('hidden');
+        if (spinner) spinner.classList.add('hidden');
+      }
+    }
+
+    function showErrorState(message) {
+      const loadingText = document.querySelector('#screen-loading p');
+      if (loadingText) {
+        loadingText.textContent = message;
+        loadingText.className = "text-sm text-iosRed font-semibold mt-2";
+      }
+      showToast(message, 'error');
+    }
+
+    // ─── UTILITY FUNCTIONS ────────────────────────────────────────────
+    function formatNumber(num) {
+      return new Intl.NumberFormat('en-US').format(num);
+    }
+
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // ─── EVENT LISTENERS ─────────────────────────────────────────────
+    
+    // Join Channel Button click
+    document.getElementById('btn-join-channel').addEventListener('click', () => {
+      haptic.medium();
+      tg.openTelegramLink(CHANNEL_URL);
+    });
+
+    // Verify Subscription Button click
+    document.getElementById('btn-verify').addEventListener('click', verifySubscription);
+
+    // Copy Link Button click
+    document.getElementById('btn-copy').addEventListener('click', copyReferralLink);
+
+    // Share Link Button click
+    document.getElementById('btn-share').addEventListener('click', shareReferralLink);
+
+    // Expand Leaderboard Button click
+    document.getElementById('btn-expand-leaderboard').addEventListener('click', () => {
+      haptic.light();
+      STATE.fullLeaderboardMode = !STATE.fullLeaderboardMode;
+      const btn = document.getElementById('btn-expand-leaderboard');
+      if (STATE.fullLeaderboardMode) {
+        btn.textContent = "← Qisqartirish";
+      } else {
+        btn.textContent = "Hammasi →";
+      }
+      renderLeaderboard();
+    });
+
+    // Start initialization when DOM is ready
+    document.addEventListener('DOMContentLoaded', init);
+
+  </script>
+</body>
+</html>
