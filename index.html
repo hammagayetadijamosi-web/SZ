@@ -48,7 +48,6 @@
       background-attachment: fixed;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
-      /* Background gradient matching WWDC 2025 wallpapers */
       background-image: 
         radial-gradient(circle at 10% 15%, rgba(0, 122, 255, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
@@ -56,10 +55,7 @@
       padding-top: calc(16px + var(--safe-top));
       padding-bottom: calc(115px + var(--safe-bottom));
     }
-    /* 
-      iOS 26 Specular Liquid Glass
-      Uses multi-layer lighting, refraction borders, and heavy blur saturation.
-    */
+    /* iOS 26 Specular Liquid Glass */
     .liquid-glass {
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(40px) saturate(220%) brightness(1.08);
@@ -74,7 +70,6 @@
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    /* Specular Light Sheen Overlay */
     .liquid-glass::before {
       content: '';
       position: absolute;
@@ -83,7 +78,6 @@
       pointer-events: none;
       z-index: 1;
     }
-    /* Interactive Press Animation (Fluid Gel response) */
     .liquid-glass-interactive {
       cursor: pointer;
     }
@@ -95,10 +89,7 @@
         0 5px 15px rgba(0, 0, 0, 0.4),
         inset 0 1px 0px rgba(255, 255, 255, 0.25);
     }
-    /* 
-      iOS 26 Liquid Tab Bar Layout (WWDC 2025 Apple Music Match)
-      Unified floating capsule on the left, separate circular button on the right.
-    */
+    /* Navbar Layout */
     .navbar-container {
       position: fixed;
       bottom: calc(20px + var(--safe-bottom));
@@ -111,7 +102,6 @@
       z-index: 40;
       align-items: center;
     }
-    /* Left Capsule (Contains Home, Leaderboard) */
     .navbar-main-capsule {
       flex: 1;
       height: 72px;
@@ -131,7 +121,6 @@
       position: relative;
       overflow: hidden;
     }
-    /* Highlighted active pill behind the active tab */
     .active-pill-bg {
       position: absolute;
       height: 52px;
@@ -143,7 +132,6 @@
       z-index: 1;
       transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    /* Right Circle Button (Contains Shop / Gifts) */
     .navbar-circle-btn {
       width: 72px;
       height: 72px;
@@ -326,136 +314,156 @@
     </div>
   </div>
   <!-- ═══════════════════════════════════════
-       MAIN APP CONTAINER
+       SCREEN 3: ERROR / DISCONNECT SCREEN
        ═══════════════════════════════════════ -->
-  <main class="max-w-md mx-auto px-4">
-    
-    <!-- 👤 TAB 1: DASHBOARD -->
-    <div id="tab-dashboard" class="tab-content space-y-6">
-      <!-- Profile Header -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div id="user-avatar" class="w-12 h-12 rounded-full bg-gradient-to-tr from-iosBlue to-purple-600 flex items-center justify-center font-black text-base border border-white/20 shadow-lg">
-            H
-          </div>
-          <div class="flex flex-col">
-            <span id="user-name" class="font-bold text-base leading-tight">Foydalanuvchi</span>
-            <span id="user-username" class="text-xs text-white/40">@username</span>
-          </div>
-        </div>
-        <span class="px-3.5 py-1.5 rounded-full text-[10px] font-bold bg-iosGreen/10 border border-iosGreen/25 text-iosGreen">
-          ✓ Faol A'zo
-        </span>
+  <div id="screen-error" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#08080C]/95 backdrop-blur-xl">
+    <div class="liquid-glass w-full max-w-sm p-8 flex flex-col items-center text-center space-y-6">
+      <div class="w-20 h-20 rounded-[24px] bg-iosRed/10 border border-iosRed/20 flex items-center justify-center text-4xl shadow-inner text-iosRed">
+        ⚠️
       </div>
-      <!-- Hero Points Balance Card -->
-      <div class="liquid-glass p-6 flex flex-col items-center justify-center">
-        <span class="text-[10px] font-black tracking-widest text-white/30 uppercase z-10">Sizning balansingiz</span>
-        <div class="flex items-baseline mt-1 z-10">
-          <span id="balance-points" class="text-5xl font-black tracking-tight bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">0</span>
-          <span class="text-base font-bold text-white/50 ml-2">ball</span>
-        </div>
-        <!-- Mini stats -->
-        <div class="grid grid-cols-2 w-full mt-6 pt-4 border-t border-white/5 text-center z-10">
-          <div class="border-r border-white/5">
-            <span class="text-[9px] font-bold uppercase tracking-wider text-white/30">Takliflar</span>
-            <p id="stat-referrals" class="text-lg font-extrabold mt-0.5 text-white">0</p>
-          </div>
-          <div>
-            <span class="text-[9px] font-bold uppercase tracking-wider text-white/30">Reyting</span>
-            <p id="stat-rank" class="text-lg font-extrabold mt-0.5 text-white">-</p>
-          </div>
-        </div>
+      <div class="space-y-2">
+        <h2 class="text-xl font-extrabold text-white">Ulanishda xatolik</h2>
+        <p id="error-message-text" class="text-xs text-white/50 leading-relaxed">
+          Server bilan aloqa o'rnatib bo'lmadi. Iltimos, internetingizni tekshiring va qayta urinib ko'ring.
+        </p>
       </div>
-      <!-- Referral Link Box -->
-      <div class="liquid-glass p-5 space-y-4">
-        <div class="space-y-1 z-10">
-          <h3 class="font-bold text-sm">Do'stlarni taklif qiling</h3>
-          <p class="text-xs text-white/50 leading-relaxed">
-            Sizning taklif havolangiz orqali kirib, kanalga obuna bo'lgan har bir do'stingiz uchun <b>+50 ball</b> oling. Ularga esa <b>+10 ball</b> beriladi!
-          </p>
-        </div>
-        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 text-xs font-mono select-all overflow-hidden text-ellipsis whitespace-nowrap text-white/65 z-10">
-          <span id="ref-link-text" class="overflow-hidden text-ellipsis mr-2">Yuklanmoqda...</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 z-10">
-          <button id="btn-copy" class="btn-glass py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 text-white">
-            <span>🔗 Nusxalash</span>
-          </button>
-          <button id="btn-share" class="btn-prominent py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 text-white">
-            <span>📤 Ulashish</span>
-          </button>
-        </div>
-      </div>
-      <!-- How it works -->
-      <div class="liquid-glass p-5 space-y-4">
-        <h3 class="font-bold text-sm z-10">Tizim qanday ishlaydi?</h3>
-        <div class="space-y-3.5 z-10">
-          <div class="flex items-start gap-3">
-            <div class="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0 text-iosBlue">1</div>
-            <p class="text-xs text-white/55 leading-relaxed">Taklif havolangizni do'stingizga yuboring.</p>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0 text-iosBlue">2</div>
-            <p class="text-xs text-white/55 leading-relaxed">Do'stingiz havoladan kirib kanalimizga obuna bo'lsin.</p>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0 text-iosBlue">3</div>
-            <p class="text-xs text-white/55 leading-relaxed">Kanalga a'zo bo'lganidan so'ng ballar hisobingizga qo'shiladi.</p>
-          </div>
-        </div>
-      </div>
+      <button onclick="init()" class="btn-prominent w-full py-4 rounded-2xl font-bold text-sm text-white">
+        🔄 Qayta urinish
+      </button>
     </div>
-    <!-- 🏆 TAB 2: LEADERBOARD -->
-    <div id="tab-leaderboard" class="tab-content hidden space-y-6">
-      <div class="text-center py-2">
-        <h2 class="text-xl font-extrabold">Top Taklifchilar 🏆</h2>
-        <p class="text-xs text-white/40 mt-1">Eng ko'p do'st taklif qilgan faollar reytingi</p>
+  </div>
+  <!-- ═══════════════════════════════════════
+       MAIN APP CONTAINER (HIDDEN BY DEFAULT)
+       ═══════════════════════════════════════ -->
+  <div id="screen-main" class="hidden">
+    <main class="max-w-md mx-auto px-4">
+      
+      <!-- 👤 TAB 1: DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content space-y-6">
+        <!-- Profile Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div id="user-avatar" class="w-12 h-12 rounded-full bg-gradient-to-tr from-iosBlue to-purple-600 flex items-center justify-center font-black text-base border border-white/20 shadow-lg">
+              H
+            </div>
+            <div class="flex flex-col">
+              <span id="user-name" class="font-bold text-base leading-tight">Foydalanuvchi</span>
+              <span id="user-username" class="text-xs text-white/40">@username</span>
+            </div>
+          </div>
+          <span class="px-3.5 py-1.5 rounded-full text-[10px] font-bold bg-iosGreen/10 border border-iosGreen/25 text-iosGreen">
+            ✓ Faol A'zo
+          </span>
+        </div>
+        <!-- Hero Points Balance Card -->
+        <div class="liquid-glass p-6 flex flex-col items-center justify-center">
+          <span class="text-[10px] font-black tracking-widest text-white/30 uppercase z-10">Sizning balansingiz</span>
+          <div class="flex items-baseline mt-1 z-10">
+            <span id="balance-points" class="text-5xl font-black tracking-tight bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">0</span>
+            <span class="text-base font-bold text-white/50 ml-2">ball</span>
+          </div>
+          <!-- Mini stats -->
+          <div class="grid grid-cols-2 w-full mt-6 pt-4 border-t border-white/5 text-center z-10">
+            <div class="border-r border-white/5">
+              <span class="text-[9px] font-bold uppercase tracking-wider text-white/30">Takliflar</span>
+              <p id="stat-referrals" class="text-lg font-extrabold mt-0.5 text-white">0</p>
+            </div>
+            <div>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-white/30">Reyting</span>
+              <p id="stat-rank" class="text-lg font-extrabold mt-0.5 text-white">-</p>
+            </div>
+          </div>
+        </div>
+        <!-- Referral Link Box -->
+        <div class="liquid-glass p-5 space-y-4">
+          <div class="space-y-1 z-10">
+            <h3 class="font-bold text-sm">Do'stlarni taklif qiling</h3>
+            <p class="text-xs text-white/50 leading-relaxed">
+              Sizning taklif havolangiz orqali kirib, kanalga obuna bo'lgan har bir do'stingiz uchun <b>+50 ball</b> oling. Ularga esa <b>+10 ball</b> beriladi!
+            </p>
+          </div>
+          <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 text-xs font-mono select-all overflow-hidden text-ellipsis whitespace-nowrap text-white/65 z-10">
+            <span id="ref-link-text" class="overflow-hidden text-ellipsis mr-2">Yuklanmoqda...</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 z-10">
+            <button id="btn-copy" class="btn-glass py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 text-white">
+              <span>🔗 Nusxalash</span>
+            </button>
+            <button id="btn-share" class="btn-prominent py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 text-white">
+              <span>📤 Ulashish</span>
+            </button>
+          </div>
+        </div>
+        <!-- How it works -->
+        <div class="liquid-glass p-5 space-y-4">
+          <h3 class="font-bold text-sm z-10">Tizim qanday ishlaydi?</h3>
+          <div class="space-y-3.5 z-10">
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0 text-iosBlue">1</div>
+              <p class="text-xs text-white/55 leading-relaxed">Taklif havolangizni do'stingizga yuboring.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0 text-iosBlue">2</div>
+              <p class="text-xs text-white/55 leading-relaxed">Do'stingiz havoladan kirib kanalimizga obuna bo'lsin.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold shrink-0 text-iosBlue">3</div>
+              <p class="text-xs text-white/55 leading-relaxed">Kanalga a'zo bo'lganidan so'ng ballar hisobingizga qo'shiladi.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="liquid-glass p-4">
-        <div id="leaderboard-list" class="space-y-2.5 z-10">
+      <!-- 🏆 TAB 2: LEADERBOARD -->
+      <div id="tab-leaderboard" class="tab-content hidden space-y-6">
+        <div class="text-center py-2">
+          <h2 class="text-xl font-extrabold">Top Taklifchilar 🏆</h2>
+          <p class="text-xs text-white/40 mt-1">Eng ko'p do'st taklif qilgan faollar reytingi</p>
+        </div>
+        <div class="liquid-glass p-4">
+          <div id="leaderboard-list" class="space-y-2.5 z-10">
+            <div class="text-center py-8 text-xs text-white/30">Yuklanmoqda...</div>
+          </div>
+        </div>
+      </div>
+      <!-- 🎁 TAB 3: SHOP / GIFTS -->
+      <div id="tab-shop" class="tab-content hidden space-y-6">
+        <div class="text-center py-2">
+          <h2 class="text-xl font-extrabold">Sovg'alar Do'koni 🎁</h2>
+          <p class="text-xs text-white/40 mt-1">To'plagan ballaringizni haqiqiy sovg'alarga almashtiring</p>
+        </div>
+        <div id="gifts-list" class="grid grid-cols-1 gap-4">
           <div class="text-center py-8 text-xs text-white/30">Yuklanmoqda...</div>
         </div>
       </div>
-    </div>
-    <!-- 🎁 TAB 3: SHOP / GIFTS -->
-    <div id="tab-shop" class="tab-content hidden space-y-6">
-      <div class="text-center py-2">
-        <h2 class="text-xl font-extrabold">Sovg'alar Do'koni 🎁</h2>
-        <p class="text-xs text-white/40 mt-1">To'plagan ballaringizni haqiqiy sovg'alarga almashtiring</p>
+    </main>
+    <!-- ═══════════════════════════════════════
+         WWDC 2025 SPEC LIQUID BOTTOM NAVBAR
+         ═══════════════════════════════════════ -->
+    <div class="navbar-container">
+      <!-- Left Capsule (Home, Leaderboard) -->
+      <div class="navbar-main-capsule">
+        <div id="active-pill" class="active-pill-bg"></div>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"></path>
+          </svg>
+          <span class="text-[9px] font-black mt-0.5 tracking-wider">Asosiy</span>
+        </button>
+        <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-item">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-2.25c-.622 0-1.125.504-1.125 1.125V18.75m9 0t-9 0M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+          </svg>
+          <span class="text-[9px] font-black mt-0.5 tracking-wider">Reyting</span>
+        </button>
       </div>
-      <div id="gifts-list" class="grid grid-cols-1 gap-4">
-        <div class="text-center py-8 text-xs text-white/30">Yuklanmoqda...</div>
-      </div>
-    </div>
-  </main>
-  <!-- ═══════════════════════════════════════
-       WWDC 2025 SPEC LIQUID BOTTOM NAVBAR
-       ═══════════════════════════════════════ -->
-  <div class="navbar-container">
-    <!-- Left Capsule (Home, Leaderboard) -->
-    <div class="navbar-main-capsule">
-      <!-- Floating Pill Background -->
-      <div id="active-pill" class="active-pill-bg"></div>
-      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active">
+      <!-- Right Circle Button (Shop / Do'kon) -->
+      <button onclick="switchTab('shop')" id="nav-shop" class="navbar-circle-btn">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0v11.25m-9-6h18"></path>
         </svg>
-        <span class="text-[9px] font-black mt-0.5 tracking-wider">Asosiy</span>
-      </button>
-      <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-item">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-2.25c-.622 0-1.125.504-1.125 1.125V18.75m9 0t-9 0M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-        </svg>
-        <span class="text-[9px] font-black mt-0.5 tracking-wider">Reyting</span>
+        <span class="text-[8px] font-black mt-0.5 tracking-wider">Do'kon</span>
       </button>
     </div>
-    <!-- Right Circle Button (Shop / Do'kon) -->
-    <button onclick="switchTab('shop')" id="nav-shop" class="navbar-circle-btn">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0v11.25m-9-6h18"></path>
-      </svg>
-      <span class="text-[8px] font-black mt-0.5 tracking-wider">Do'kon</span>
-    </button>
   </div>
   <!-- ═══════════════════════════════════════
        REDEMPTION CONFIRMATION BOTTOM SHEET
@@ -544,14 +552,15 @@
         
         if (STATE.isMember) {
           renderDashboard();
-          showScreen('dashboard');
+          showScreen('main');
           loadLeaderboard();
           loadGifts();
         } else {
           showScreen('subscription');
         }
       } catch (err) {
-        showErrorState(err.message || "Tizimga bog'lanishda xatolik yuz berdi");
+        showErrorState(err.message || "Server bilan ulanishda xatolik");
+        showScreen('error');
       } finally {
         setTimeout(() => {
           const loadingScreen = document.getElementById('screen-loading');
@@ -573,6 +582,9 @@
       
       try {
         const response = await fetch(url, options);
+        if (!response.ok) {
+          throw new Error(`Server xatoligi: ${response.status}`);
+        }
         const data = await response.json();
         if (!data.success) {
           throw new Error(data.error || "Noma'lum xatolik");
@@ -583,7 +595,6 @@
         throw e;
       }
     }
-    // Tab switching with sliding active-pill animation
     function switchTab(tabId) {
       if (STATE.activeTab === tabId) return;
       haptic.light();
@@ -603,7 +614,7 @@
         document.getElementById('nav-shop').classList.add('active');
       }
       
-      // Active pill sliding logic (between Asosiy and Reyting)
+      // Active pill sliding logic
       const pill = document.getElementById('active-pill');
       if (tabId === 'dashboard') {
         pill.style.transform = 'translateX(0)';
@@ -612,7 +623,6 @@
         pill.style.transform = 'translateX(100%)';
         pill.style.opacity = '1';
       } else {
-        // Hide pill when Shop is active (since Shop is a separate circular button)
         pill.style.opacity = '0';
       }
       
@@ -642,7 +652,7 @@
         
         setTimeout(() => {
           renderDashboard();
-          showScreen('dashboard');
+          showScreen('main');
           loadLeaderboard();
           loadGifts();
         }, 800);
@@ -721,6 +731,7 @@
       document.getElementById('overlay').classList.add('open');
       document.getElementById('redeem-modal').classList.add('open');
     }
+    // Modal control
     function closeRedeemModal() {
       document.getElementById('overlay').classList.remove('open');
       document.getElementById('redeem-modal').classList.remove('open');
@@ -775,12 +786,16 @@
       const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
       tg.openTelegramLink(shareUrl);
     }
+    // Comprehensive screen switching
     function showScreen(screenId) {
       document.getElementById('screen-subscription').classList.add('hidden');
+      document.getElementById('screen-main').classList.add('hidden');
+      document.getElementById('screen-error').classList.add('hidden');
       
       if (screenId === 'subscription') {
         document.getElementById('screen-subscription').classList.remove('hidden');
-      } else if (screenId === 'dashboard') {
+      } else if (screenId === 'main') {
+        document.getElementById('screen-main').classList.remove('hidden');
         tg.MainButton.setParams({
           text: "📤 Do'stlarni taklif qilish",
           color: "#007AFF",
@@ -789,6 +804,9 @@
           is_visible: true
         });
         tg.MainButton.onClick(shareReferralLink);
+      } else if (screenId === 'error') {
+        document.getElementById('screen-error').classList.remove('hidden');
+        tg.MainButton.hide();
       }
     }
     function renderDashboard() {
@@ -808,6 +826,7 @@
       document.getElementById('ref-link-text').textContent = refLink;
       determineUserRank();
     }
+    // Determine rank
     function determineUserRank() {
       if (STATE.leaderboard.length === 0) return;
       let rank = "-";
@@ -902,15 +921,18 @@
       }
     }
     function showErrorState(message) {
-      const loadingText = document.querySelector('#screen-loading p');
-      if (loadingText) {
-        loadingText.textContent = message;
-        loadingText.className = "text-xs text-iosRed font-bold mt-2 uppercase tracking-widest";
+      const errorText = document.getElementById('error-message-text');
+      if (errorText) {
+        errorText.textContent = message;
       }
       showToast(message, 'error');
     }
     function formatNumber(num) {
       return new Intl.NumberFormat('en-US').format(num);
+    }
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
     }
     document.getElementById('btn-join-channel').addEventListener('click', () => {
       haptic.medium();
