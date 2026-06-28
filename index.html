@@ -1,17 +1,7 @@
 <!DOCTYPE html>
 <!--
-  index.html — Hammaga Yetadi Telegram Mini App (v5.0)
-  Pure iOS 18 · Liquid Glass · Spring Animations
-
-  Yangiliklar (v5.0):
-    - Sof iOS 18 dizayn tili — subtle mesh-gradient background
-    - SF Pro typography (Apple system font stack)
-    - Native spring animations (cubic-bezier 0.16, 1, 0.3, 1)
-    - Ixcham 4-tab liquid glass navbar (Apple Music style)
-    - Splash screen bilan AppIcon pulse animatsiya
-    - Smooth screen transitions (fade+slide)
-    - Pro olish tugmasi — ichida maxfiy tg.openLink
-    - Protected Canva Pro viewer (maxfiy havola, screen-copy blocked)
+  index.html — Hammaga Yetadi Telegram Mini App (v5.5)
+  Pure iOS 18 · Liquid Glass · Spring Animations · Secret Admin Panel
 -->
 <html lang="uz">
 <head>
@@ -147,26 +137,27 @@ html, body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   gap: 8px;
-  height: 50px;
+  height: 48px;
   padding: 0 20px;
-  border-radius: var(--r-pill);
+  border-radius: 16px;
   font-family: var(--font);
-  font-size: 16px; font-weight: 600;
+  font-size: 15px; font-weight: 650;
   letter-spacing: -0.01em;
   border: none; outline: none;
   cursor: pointer;
-  transition: transform 0.18s var(--t-spring), opacity 0.2s ease, background 0.2s ease;
+  transition: transform 0.18s var(--t-spring), opacity 0.2s ease, filter 0.2s ease;
   -webkit-user-select: none; user-select: none;
 }
-.btn:active { transform: scale(0.965); }
+.btn:active { transform: scale(0.96); }
 .btn-primary {
   color: #fff;
-  background: linear-gradient(180deg, #0A84FF 0%, #066EE0 100%);
+  background: linear-gradient(180deg, #0A84FF 0%, #0066cc 100%);
   box-shadow:
-    0 8px 20px rgba(10, 132, 255, 0.35),
+    0 6px 16px rgba(10, 132, 255, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
 }
+.btn-primary:active { filter: brightness(0.9); }
 .btn-glass {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
@@ -198,6 +189,9 @@ html, body {
     inset 0 -1px 0 rgba(0, 0, 0, 0.18);
   overflow: hidden;
   transition: transform 0.2s var(--t-spring);
+  border: none;
+  outline: none;
+  cursor: pointer;
 }
 .btn-pro:active { transform: scale(0.97); }
 .btn-pro::before {
@@ -218,28 +212,30 @@ html, body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   6. NAVBAR (iOS Liquid Glass — 4 tab, 1 capsule)
+   6. NAVBAR (iOS Liquid Glass — Dynamic Tabs)
    ════════════════════════════════════════════════════════════════════ */
 .navbar {
   position: fixed;
   bottom: calc(14px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 20px);
-  max-width: 420px;
+  width: calc(100% - 24px);
+  max-width: 400px;
   z-index: 40;
-  height: 62px;
-  background: rgba(30, 30, 36, 0.55);
-  backdrop-filter: blur(50px) saturate(220%);
-  -webkit-backdrop-filter: blur(50px) saturate(220%);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 31px;
+  height: 64px;
+  background: rgba(20, 20, 25, 0.45);
+  backdrop-filter: blur(30px) saturate(210%);
+  -webkit-backdrop-filter: blur(30px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 32px;
   box-shadow:
-    0 20px 44px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.20);
-  display: flex; align-items: center;
-  padding: 5px;
+    0 15px 35px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  gap: 2px;
   overflow: hidden;
 }
 .navbar::before {
@@ -249,18 +245,18 @@ html, body {
 }
 .nav-pill {
   position: absolute;
-  top: 5px; bottom: 5px;
-  left: 5px;
-  width: calc((100% - 10px) / 4);
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  top: 4px; bottom: 4px;
+  left: 4px;
+  /* Width is set dynamically in JS based on tab count */
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.20),
-    0 6px 14px rgba(0, 0, 0, 0.35);
-  transition: transform 0.45s var(--t-spring);
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.38s cubic-bezier(0.25, 1, 0.2, 1.05), width 0.38s cubic-bezier(0.25, 1, 0.2, 1.05);
   transform: translateX(0);
-  will-change: transform;
+  will-change: transform, width;
 }
 .nav-pill::after {
   content: ''; position: absolute; inset: 0;
@@ -272,21 +268,30 @@ html, body {
   position: relative;
   flex: 1; height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
   color: rgba(255, 255, 255, 0.45);
   z-index: 2;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.25s ease;
+  transition: color 0.25s ease, transform 0.2s ease;
 }
-.nav-item.active { color: #fff; }
+.nav-item:active { transform: scale(0.94); }
+.nav-item.active { color: #0A84FF; }
 .nav-item svg {
-  width: 22px; height: 22px;
-  transition: transform 0.35s var(--t-bounce);
+  width: 21px; height: 21px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
 }
-.nav-item.active svg { transform: translateY(-1px) scale(1.10); }
+.nav-item.active svg {
+  transform: translateY(-1px) scale(1.06);
+  filter: drop-shadow(0 2px 8px rgba(10, 132, 255, 0.5));
+}
 .nav-label {
-  font-size: 10px; font-weight: 600; letter-spacing: 0.02em;
+  font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em;
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -294,12 +299,12 @@ html, body {
    ════════════════════════════════════════════════════════════════════ */
 .overlay {
   position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   z-index: 49;
   opacity: 0; pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
 }
 .overlay.open { opacity: 1; pointer-events: auto; }
 
@@ -308,22 +313,22 @@ html, body {
   bottom: 0; left: 50%;
   transform: translate(-50%, 100%);
   width: 100%; max-width: 420px;
-  background: rgba(22, 22, 28, 0.78);
-  backdrop-filter: blur(60px) saturate(220%);
-  -webkit-backdrop-filter: blur(60px) saturate(220%);
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
+  background: rgba(20, 20, 26, 0.82);
+  backdrop-filter: blur(50px) saturate(220%);
+  -webkit-backdrop-filter: blur(50px) saturate(220%);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
   z-index: 50;
-  transition: transform 0.5s var(--t-spring);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   padding-bottom: calc(20px + var(--safe-bottom));
-  box-shadow: 0 -20px 50px rgba(0,0,0,0.5);
+  box-shadow: 0 -15px 45px rgba(0,0,0,0.6);
 }
 .sheet.open { transform: translate(-50%, 0); }
 .sheet-handle {
-  width: 36px; height: 5px; border-radius: 3px;
-  background: rgba(255, 255, 255, 0.18);
-  margin: 8px auto 4px;
+  width: 38px; height: 5px; border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 10px auto 6px;
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -344,7 +349,7 @@ html, body {
 }
 .tab-content.active { display: block; }
 @keyframes tabIn {
-  0%   { opacity: 0; transform: translateY(8px) scale(0.985); }
+  0%   { opacity: 0; transform: translateY(10px) scale(0.98); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -360,58 +365,84 @@ html, body {
 #scroll-root { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ════════════════════════════════════════════════════════════════════
-   9. SPLASH SCREEN (iPhone-style)
+   9. SPLASH SCREEN (Premium Opening Animation)
    ════════════════════════════════════════════════════════════════════ */
 #screen-splash {
   position: fixed; inset: 0; z-index: 100;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: #000;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  background: #050508;
+  overflow: hidden;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-#screen-splash.hide { opacity: 0; transform: scale(1.02); pointer-events: none; }
+#screen-splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
+.splash-bg-glow {
+  position: absolute;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.22) 0%, rgba(191, 90, 242, 0.16) 55%, transparent 100%);
+  filter: blur(60px);
+  animation: splashGlow 5s ease-in-out infinite alternate;
+}
+@keyframes splashGlow {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.25) translate(15px, -15px); }
+}
+.splash-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+}
+.splash-logo-container { perspective: 1000px; }
 .splash-logo {
   width: 96px; height: 96px;
   border-radius: 24px;
   background: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 50%, #BF5AF2 100%);
   display: flex; align-items: center; justify-content: center;
   box-shadow:
-    0 20px 50px rgba(10, 132, 255, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  animation: logoPulse 2s ease-in-out infinite;
+    0 20px 45px rgba(10, 132, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   position: relative;
+  animation: logoEntrance 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-.splash-logo::after {
-  content: ''; position: absolute; inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 40%);
-  pointer-events: none;
+.splash-logo-letter {
+  font-size: 48px; font-weight: 900; color: #fff;
+  letter-spacing: -0.04em; text-shadow: 0 2px 10px rgba(0,0,0,0.25);
 }
-@keyframes logoPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 20px 50px rgba(10,132,255,0.4), inset 0 1px 0 rgba(255,255,255,0.35); }
-  50%      { transform: scale(1.05); box-shadow: 0 30px 80px rgba(10,132,255,0.6), inset 0 1px 0 rgba(255,255,255,0.5); }
+.splash-logo-glow {
+  position: absolute; inset: -2px; border-radius: 26px;
+  background: linear-gradient(135deg, #0A84FF, #BF5AF2);
+  z-index: -1; filter: blur(10px); opacity: 0.65;
+}
+@keyframes logoEntrance {
+  0% { transform: scale(0.4) rotateY(-90deg); opacity: 0; }
+  100% { transform: scale(1) rotateY(0deg); opacity: 1; }
 }
 .splash-title {
-  margin-top: 22px;
-  font-size: 22px; font-weight: 700; letter-spacing: -0.018em;
-  color: #fff;
+  margin-top: 24px; font-size: 24px; font-weight: 800;
+  letter-spacing: -0.02em; color: #fff; opacity: 0;
+  animation: fadeInText 0.8s ease-out 0.4s forwards;
 }
 .splash-sub {
-  margin-top: 4px;
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.30);
+  margin-top: 6px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35); opacity: 0;
+  animation: fadeInText 0.8s ease-out 0.6s forwards;
 }
-.splash-spinner {
-  margin-top: 28px;
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+@keyframes fadeInText {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+.splash-loader-bar {
+  margin-top: 32px; width: 150px; height: 4px;
+  background: rgba(255, 255, 255, 0.08); border-radius: 2px;
+  overflow: hidden; opacity: 0;
+  animation: fadeInText 0.8s ease-out 0.8s forwards;
+}
+.splash-loader-progress {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #0A84FF, #BF5AF2);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 /* ════════════════════════════════════════════════════════════════════
    10. AVATAR / ICONS / BADGES
@@ -478,12 +509,23 @@ html, body {
    11. GIFT CARD
    ════════════════════════════════════════════════════════════════════ */
 .gift-card {
-  display: flex; gap: 14px;
-  padding: 14px;
+  display: flex; gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: transform 0.25s var(--t-spring), background 0.25s ease;
+}
+.gift-card:active {
+  transform: scale(0.985);
+  background: rgba(255, 255, 255, 0.07);
 }
 .gift-thumb {
-  width: 80px; height: 80px;
-  border-radius: 16px;
+  width: 84px; height: 84px;
+  border-radius: 18px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, var(--c1, #0A84FF), var(--c2, #5E5CE6));
@@ -500,9 +542,9 @@ html, body {
 }
 .gift-thumb svg { position: relative; z-index: 2; }
 
-.gift-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.gift-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-.gift-desc { font-size: 12px; color: rgba(255, 255, 255, 0.5); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gift-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.gift-title { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; color: #fff; }
+.gift-desc { font-size: 12.5px; color: rgba(255, 255, 255, 0.55); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* ════════════════════════════════════════════════════════════════════
    12. STAT TILES
@@ -539,8 +581,8 @@ html, body {
    ════════════════════════════════════════════════════════════════════ */
 .ref-pill {
   display: flex; align-items: center; gap: 10px;
-  padding: 11px 14px;
-  background: rgba(0, 0, 0, 0.30);
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 14px;
 }
@@ -548,7 +590,7 @@ html, body {
   flex: 1; min-width: 0;
   font-family: ui-monospace, "SF Mono", "Menlo", monospace;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.70);
+  color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -570,7 +612,7 @@ html, body {
 .toast {
   padding: 12px 16px;
   border-radius: 14px;
-  background: rgba(28, 28, 32, 0.92);
+  background: rgba(28, 28, 32, 0.94);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -685,15 +727,23 @@ html, body {
 <div class="bg-noise"></div>
 
 <!-- ════════════════════════════════════════════════════════════════
-     SCREEN: SPLASH
+     SCREEN: SPLASH (Premium Opening Animation)
      ════════════════════════════════════════════════════════════════ -->
 <div id="screen-splash">
-  <div class="splash-logo">
-    <span style="font-size: 44px; font-weight: 800; color: #fff; letter-spacing: -0.04em;">H</span>
+  <div class="splash-bg-glow"></div>
+  <div class="splash-content">
+    <div class="splash-logo-container">
+      <div class="splash-logo">
+        <span class="splash-logo-letter">H</span>
+        <div class="splash-logo-glow"></div>
+      </div>
+    </div>
+    <div class="splash-title">Hammaga Yetadi</div>
+    <div class="splash-sub">iOS Liquid Glass Edition</div>
+    <div class="splash-loader-bar">
+      <div class="splash-loader-progress" id="splash-progress"></div>
+    </div>
   </div>
-  <div class="splash-title">Hammaga Yetadi</div>
-  <div class="splash-sub">iOS Edition</div>
-  <div class="splash-spinner"></div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════════════
@@ -902,16 +952,96 @@ html, body {
       </div>
       <div class="section">
         <div id="mygifts-list" class="col gap-3">
-          <div class="empty"><div class="empty-icon"><div class="spin"></div></div><div class="empty-text">Yuklanmoqda...</div></div>
+          <div class="empty"><div class="empty-icon"><div class="spin"></div></div><div class="empty-text">Sovg'alaringiz shu yerda chiqadi</div></div>
         </div>
       </div>
+      <div style="height: 20px;"></div>
+    </div>
+
+    <!-- ─── TAB 5: ADMIN PANEL ────────────────── -->
+    <div id="tab-admin" class="tab-content">
+      <div class="section" style="padding-top: 4px; margin-bottom: 16px;">
+        <div class="section-head">
+          <h2 class="section-h1">Boshqaruv paneli</h2>
+          <p class="section-sub">Tizim statistikasi va sozlamalari</p>
+        </div>
+      </div>
+      
+      <!-- Stats Panel -->
+      <div class="section">
+        <div class="glass" style="padding: 16px;">
+          <h3 class="t-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2.4"><path d="M18 20V10M12 20V4M6 20v-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Statistika
+          </h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="glass" style="padding: 12px; background: rgba(255,255,255,0.03);">
+              <div class="stat-label" style="font-size: 9px; text-align: left;">Jami a'zolar</div>
+              <div id="admin-total-users" class="stat-value" style="font-size: 18px; text-align: left; margin-top: 2px;">—</div>
+            </div>
+            <div class="glass" style="padding: 12px; background: rgba(255,255,255,0.03);">
+              <div class="stat-label" style="font-size: 9px; text-align: left;">Faol a'zolar</div>
+              <div id="admin-active-users" class="stat-value" style="font-size: 18px; text-align: left; margin-top: 2px;">—</div>
+            </div>
+            <div class="glass" style="padding: 12px; background: rgba(255,255,255,0.03); grid-column: span 2;">
+              <div class="stat-label" style="font-size: 9px; text-align: left;">Tarqatilgan jami ballar</div>
+              <div id="admin-total-points" class="stat-value" style="font-size: 18px; text-align: left; margin-top: 2px;">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grant Points Form -->
+      <div class="section" style="margin-top: 14px;">
+        <div class="glass" style="padding: 16px;">
+          <h3 class="t-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF9F0A" stroke-width="2.4"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Ball taqdim etish
+          </h3>
+          <div class="col gap-3">
+            <input type="number" id="grant-user-id" placeholder="Foydalanuvchi Telegram ID" style="width: 100%; height: 42px; padding: 0 14px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); color: #fff; font-family: var(--font); outline: none;">
+            <input type="number" id="grant-amount" placeholder="Ball miqdori (masalan: 100)" style="width: 100%; height: 42px; padding: 0 14px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); color: #fff; font-family: var(--font); outline: none;">
+            <button class="btn btn-primary" style="height: 42px; font-size: 14px; width: 100%;" onclick="adminGrantPoints()">Yuborish</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Canva Link Form -->
+      <div class="section" style="margin-top: 14px;">
+        <div class="glass" style="padding: 16px;">
+          <h3 class="t-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BF5AF2" stroke-width="2.4"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Canva Pro Havola Qo'shish
+          </h3>
+          <div class="col gap-3">
+            <input type="number" id="addcanva-gift-id" placeholder="Sovg'a ID (masalan: 1)" style="width: 100%; height: 42px; padding: 0 14px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); color: #fff; font-family: var(--font); outline: none;">
+            <input type="text" id="addcanva-link" placeholder="Havola (https://canva.com/brand/join?...)" style="width: 100%; height: 42px; padding: 0 14px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); color: #fff; font-family: var(--font); outline: none;">
+            <button class="btn btn-primary" style="height: 42px; font-size: 14px; width: 100%;" onclick="adminAddCanva()">Qo'shish</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Broadcast Message Form -->
+      <div class="section" style="margin-top: 14px;">
+        <div class="glass" style="padding: 16px;">
+          <h3 class="t-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF375F" stroke-width="2.4"><path d="M12 19V5M5 12h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Reklama Yuborish
+          </h3>
+          <div class="col gap-3">
+            <textarea id="broadcast-text" placeholder="Reklama matni (HTML format qo'llab-quvvatlanadi, masalan: <b>qalin</b>, <i>og'ma</i>)" style="width: 100%; height: 100px; padding: 12px 14px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); color: #fff; font-family: var(--font); outline: none; resize: none;"></textarea>
+            <button class="btn btn-primary" style="height: 42px; font-size: 14px; width: 100%;" onclick="adminSendBroadcast()">Hammaga yuborish</button>
+          </div>
+        </div>
+      </div>
+
       <div style="height: 20px;"></div>
     </div>
 
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
-       NAVBAR
+       NAVBAR (iOS Liquid Glass — 5 tab)
        ════════════════════════════════════════════════════════════ -->
   <nav class="navbar" id="navbar">
     <div id="nav-pill" class="nav-pill"></div>
@@ -930,6 +1060,10 @@ html, body {
     <button class="nav-item" data-tab="mygifts" onclick="switchTab('mygifts')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 00-2-2H5a2 2 0 00-2 2m18 0v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8m18 0H3m6 7h6"/></svg>
       <span class="nav-label">Sovg'alarim</span>
+    </button>
+    <button class="nav-item" id="nav-admin" data-tab="admin" onclick="switchTab('admin')" style="display: none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span class="nav-label">Admin</span>
     </button>
   </nav>
 </div>
@@ -1025,6 +1159,7 @@ const STORAGE_KEY  = 'hy_active_redemption';
 const STATE = {
   user: null,
   isMember: false,
+  isAdmin: false,
   hasProLink: false,
   leaderboard: [],
   gifts: [],
@@ -1033,7 +1168,8 @@ const STATE = {
   activeRedemption: null,
   myRedemptions: [],
   protectedContent: null,
-  protectedCountdown: null
+  protectedCountdown: null,
+  refLink: null
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1127,60 +1263,107 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     try { err = (await res.json()).error; } catch(e) { err = 'Server xatoligi: ' + res.status; }
     throw new Error(err || 'Noma\'lum xatolik');
   }
-  return res.json();
+  const data = await res.json();
+  if (data && data.success === false) {
+    throw new Error(data.error || 'Noma\'lum xatolik');
+  }
+  return data;
 }
 
 /* ════════════════════════════════════════════════════════════════════
    INIT
    ════════════════════════════════════════════════════════════════════ */
 async function init() {
-  showScreen('main');
   const initData   = tg ? tg.initData : '';
   const startParam = (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || getQueryParam('startapp') || null;
+
+  const setProgress = (w) => {
+    const bar = document.getElementById('splash-progress');
+    if (bar) bar.style.width = w + '%';
+  };
+
+  setProgress(15);
 
   if (!tg || !initData) {
     document.getElementById('error-msg').textContent = "Telegram orqali kirish zarur. Iltimos, bot orqali qayta kiring.";
     showScreen('error');
-    hideSplash();
+    setProgress(100);
+    setTimeout(hideSplash, 200);
     return;
   }
 
+  setProgress(35);
+
   try {
     const res = await apiCall('/api/auth', 'POST', { init_data: initData, referral_code: startParam });
+    setProgress(65);
+    
     STATE.user      = res.user;
     STATE.isMember  = res.is_member;
+    STATE.isAdmin   = !!res.is_admin;
     STATE.hasProLink = !!res.has_pro_link;
+    STATE.refLink   = res.referral_link;
 
     const proBtn = document.getElementById('btn-pro');
     if (proBtn) proBtn.style.display = STATE.hasProLink ? 'flex' : 'none';
 
+    // Show/hide admin tab in navbar
+    const adminNav = document.getElementById('nav-admin');
+    if (adminNav) adminNav.style.display = STATE.isAdmin ? 'flex' : 'none';
+
     if (STATE.isMember) {
       renderDashboard();
+      setProgress(80);
+      
+      // Load other data in parallel
+      await Promise.all([
+        loadLeaderboard(),
+        loadGifts(),
+        loadMyGifts()
+      ]);
+      
+      setProgress(100);
       showScreen('main');
-      loadLeaderboard();
-      loadGifts();
-      loadMyGifts();
       setupMainButton();
+      
+      // Set initial pill based on visible tabs count
+      const visibleTabsCount = STATE.isAdmin ? 5 : 4;
+      const pill = document.getElementById('nav-pill');
+      if (pill) {
+        pill.style.width = `calc((100% - ${visibleTabsCount * 2 + 2}px) / ${visibleTabsCount})`;
+        pill.style.transform = 'translateX(0%)';
+      }
     } else {
+      setProgress(100);
       showScreen('sub');
     }
   } catch (err) {
-    document.getElementById('error-msg').textContent = err.message || "Server bilan aloqa o'rnatib bo'lmadi.";
+    setProgress(100);
+    document.getElementById('error-msg').textContent = err.message || "Server bilan aloqa o'rnadib bo'lmadi.";
     showScreen('error');
   } finally {
-    setTimeout(hideSplash, 400);
+    setTimeout(hideSplash, 650);
   }
 }
 
 /* ════════════════════════════════════════════════════════════════════
    TAB SWITCH
    ════════════════════════════════════════════════════════════════════ */
-const TABS = ['dashboard', 'leaderboard', 'shop', 'mygifts'];
+const TABS = ['dashboard', 'leaderboard', 'shop', 'mygifts', 'admin'];
 function switchTab(tabId) {
   if (STATE.activeTab === tabId) return;
   haptic.select();
-  const idx = TABS.indexOf(tabId);
+  
+  // Get only the visible tabs
+  const visibleTabs = TABS.filter(t => {
+    if (t === 'admin') return STATE.isAdmin;
+    return true;
+  });
+  
+  const idx = visibleTabs.indexOf(tabId);
   if (idx === -1) return;
+
+  const tabCount = visibleTabs.length;
 
   // tab content
   TABS.forEach(t => {
@@ -1202,9 +1385,12 @@ function switchTab(tabId) {
     n.classList.toggle('active', n.dataset.tab === tabId);
   });
 
-  // pill
+  // pill width and transform
   const pill = document.getElementById('nav-pill');
-  pill.style.transform = `translateX(${idx * 100}%)`;
+  if (pill) {
+    pill.style.width = `calc((100% - ${tabCount * 2 + 2}px) / ${tabCount})`;
+    pill.style.transform = `translateX(calc(${idx * 100}% + ${idx * 2}px))`;
+  }
 
   STATE.activeTab = tabId;
 
@@ -1215,6 +1401,11 @@ function switchTab(tabId) {
   // scroll to top
   const sr = document.getElementById('scroll-root');
   if (sr) sr.scrollTop = 0;
+  
+  // Load admin stats if switching to admin tab
+  if (tabId === 'admin') {
+    loadAdminStats();
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1230,8 +1421,10 @@ function renderDashboard() {
   document.getElementById('balance-points').textContent = formatNumber(u.points);
   document.getElementById('stat-referrals').textContent = formatNumber(u.referral_count || 0);
 
-  if (u.referral_code) {
-    const link = `https://t.me/${BOT_USERNAME}?startapp=${u.referral_code}`;
+  if (STATE.refLink) {
+    document.getElementById('ref-link-text').textContent = STATE.refLink;
+  } else if (u.telegram_id) {
+    const link = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${u.telegram_id}`;
     document.getElementById('ref-link-text').textContent = link;
     STATE.refLink = link;
   } else {
@@ -1254,6 +1447,7 @@ function determineUserRank() {
 /* ════════════════════════════════════════════════════════════════════
    MAIN BUTTON (Telegram)
    ════════════════════════════════════════════════════════════════════ */
+let isMainButtonSetup = false;
 function setupMainButton() {
   if (!tg || !tg.MainButton) return;
   try {
@@ -1264,7 +1458,10 @@ function setupMainButton() {
       is_active: true,
       is_visible: true
     });
-    tg.MainButton.onClick(shareReferralLink);
+    if (!isMainButtonSetup) {
+      tg.MainButton.onClick(shareReferralLink);
+      isMainButtonSetup = true;
+    }
     tg.MainButton.show();
   } catch(e){}
 }
@@ -1322,7 +1519,13 @@ async function verifySubscription() {
   try {
     const res = await apiCall('/api/verify', 'POST', { init_data: tg.initData });
     STATE.user = res.user;
+    STATE.isAdmin = !!res.is_admin;
     STATE.isMember = true;
+    
+    // Show/hide admin tab in navbar
+    const adminNav = document.getElementById('nav-admin');
+    if (adminNav) adminNav.style.display = STATE.isAdmin ? 'flex' : 'none';
+    
     haptic.success();
     showToast("Muvaffaqiyatli a'zo bo'ldingiz!", 'success');
     setTimeout(() => {
@@ -1332,6 +1535,13 @@ async function verifySubscription() {
       loadGifts();
       loadMyGifts();
       setupMainButton();
+      
+      const visibleTabsCount = STATE.isAdmin ? 5 : 4;
+      const pill = document.getElementById('nav-pill');
+      if (pill) {
+        pill.style.width = `calc((100% - ${visibleTabsCount * 2 + 2}px) / ${visibleTabsCount})`;
+        pill.style.transform = 'translateX(0%)';
+      }
     }, 600);
   } catch(err) {
     haptic.error();
@@ -1411,14 +1621,15 @@ function renderGifts() {
     return;
   }
   container.innerHTML = '';
-    STATE.gifts.forEach((gift, i) => {
+  STATE.gifts.forEach((gift, i) => {
     const card = document.createElement('div');
-    card.className = 'glass gift-card fade-in';
+    card.className = 'gift-card fade-in';
     card.style.animationDelay = (i * 40) + 'ms';
 
-    const hasPoints  = STATE.user.points >= gift.points_cost;
-    const outOfStock = gift.stock === 0;
-    const noCodes    = gift.gift_type === 'canva_pro_link' && (gift.available_codes === 0);
+    const userPoints  = STATE.user ? (STATE.user.points || 0) : 0;
+    const hasPoints   = userPoints >= gift.points_cost;
+    const outOfStock  = gift.stock === 0;
+    const noCodes     = gift.gift_type === 'canva_pro_link' && (gift.available_codes === 0);
     const isProtected = gift.gift_type === 'canva_pro_link';
 
     let actionHTML = '';
@@ -1426,9 +1637,9 @@ function renderGifts() {
     if (outOfStock || noCodes) {
       statusHTML = `<span class="badge" style="background:rgba(255,69,58,0.14); border:1px solid rgba(255,69,58,0.30); color:#FF453A;">${noCodes ? 'Kodlar tugagan' : 'Tugagan'}</span>`;
     } else if (hasPoints) {
-      actionHTML = `<button class="btn btn-primary" style="width:100%; height:40px; font-size:13.5px;" onclick="openRedeemModal(${gift.id})">Almashtirish</button>`;
+      actionHTML = `<button class="btn btn-primary" style="width:100%; height:40px; font-size:13.5px; margin-top: 6px;" onclick="openRedeemModal(${gift.id})">Almashtirish</button>`;
     } else {
-      const need = gift.points_cost - STATE.user.points;
+      const need = gift.points_cost - userPoints;
       statusHTML = `<span class="badge" style="background:rgba(255,159,10,0.14); border:1px solid rgba(255,159,10,0.30); color:#FF9F0A;">Yana ${formatNumber(need)} ball</span>`;
     }
 
@@ -1443,7 +1654,7 @@ function renderGifts() {
       <div class="gift-info">
         <span class="gift-title">${escapeHTML(gift.name)}</span>
         <p class="gift-desc">${escapeHTML(gift.description || "Batafsil ma'lumot yo'q.")}</p>
-        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top: 2px;">
           ${typeBadge}
           <span class="badge badge-blue">${formatNumber(gift.points_cost)} ball</span>
           ${statusHTML}
@@ -1460,8 +1671,7 @@ function giftThumbSVG(gift) {
       <circle cx="50" cy="50" r="38" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="170 80" transform="rotate(135 50 50)" opacity="0.95"/>
     </svg>`;
   }
-  const c = gift.accent_color || '#0A84FF';
-  return `<svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  return `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M20 12v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8M2 7h20l-2 5H4L2 7zM12 22V7M12 7H8.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h3.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
   </svg>`;
 }
@@ -1495,15 +1705,13 @@ async function confirmRedemption() {
     const res = await apiCall('/api/redeem', 'POST', { init_data: tg.initData, gift_id: STATE.selectedGift.id });
     if (res.user && typeof res.user.points !== 'undefined') {
       STATE.user.points = res.user.points;
-    } else if (typeof res.new_balance !== 'undefined') {
-      STATE.user.points = res.new_balance;
     }
     renderDashboard();
     renderGifts();
     closeRedeemModal();
     haptic.success();
     showToast("Sovg'a muvaffaqiyatli olindi!", 'success');
-    // For protected content types (Canva Pro), open viewer
+    
     if (res.view_token && res.redemption_id) {
       openProtectedViewer({
         id: res.redemption_id,
@@ -1541,14 +1749,14 @@ function renderMyGifts() {
   container.innerHTML = '';
   STATE.myRedemptions.forEach((r, i) => {
     const card = document.createElement('div');
-    card.className = 'glass gift-card fade-in';
+    card.className = 'gift-card fade-in';
     card.style.animationDelay = (i * 40) + 'ms';
     const isProtected = r.gift_type === 'canva_pro_link';
     card.innerHTML = `
       <div class="gift-thumb" style="${isProtected ? '' : 'background: linear-gradient(135deg, #30D158, #0A84FF);'}">
         ${isProtected
           ? `<svg width="58" height="58" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="170 80" transform="rotate(135 50 50)" opacity="0.95"/></svg>`
-          : `<svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+          : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>`
         }
       </div>
       <div class="gift-info">
@@ -1556,15 +1764,24 @@ function renderMyGifts() {
           <span class="gift-title">${escapeHTML(r.gift_name)}</span>
         </div>
         <p class="gift-desc">${formatDate(r.created_at)}</p>
-        <div class="gift-footer">
+        <div class="gift-footer" style="margin-top: 4px;">
           ${isProtected
-            ? `<button class="btn btn-primary" style="flex:1;height:36px;font-size:13px;" data-redemption='${escapeHTML(JSON.stringify({ id: r.id, gift_name: r.gift_name, view_token: r.view_token || '' }))}' onclick='openProtectedViewer(JSON.parse(this.dataset.redemption))'>Havolani ochish</button>`
+            ? `<button class="btn btn-primary" style="width:100%;height:36px;font-size:13px;" onclick="openMyGift(${i})">Havolani ochish</button>`
             : `<span class="badge badge-green"><span class="badge-dot"></span>Faol</span>`
           }
         </div>
       </div>
     `;
     container.appendChild(card);
+  });
+}
+function openMyGift(index) {
+  const r = STATE.myRedemptions[index];
+  if (!r) return;
+  openProtectedViewer({
+    id: r.id,
+    gift_name: r.gift_name,
+    view_token: r.view_token
   });
 }
 function formatDate(d) {
@@ -1590,9 +1807,8 @@ function openProtectedViewer(redemption) {
   document.getElementById('overlay-protected').classList.add('open');
   document.getElementById('protected-viewer').classList.add('open');
 
-  // Fetch content (requires view_token + redemption_id)
   if (!redemption.view_token || !redemption.id) {
-    box.innerHTML = 'Xatolik: token mavjud emas<div class="protected-overlay"></div>';
+    box.innerHTML = 'Xatolik: token va ID topilmadi<div class="protected-overlay"></div>';
     haptic.error();
     return;
   }
@@ -1642,6 +1858,106 @@ function startCountdown(expiresInSeconds) {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   ADMIN PANEL ACTIONS
+   ════════════════════════════════════════════════════════════════════ */
+async function loadAdminStats() {
+  if (!STATE.isAdmin) return;
+  try {
+    const res = await apiCall('/api/stats', 'POST', { init_data: tg.initData });
+    document.getElementById('admin-total-users').textContent = formatNumber(res.total_users);
+    document.getElementById('admin-active-users').textContent = formatNumber(res.active_users);
+    document.getElementById('admin-total-points').textContent = formatNumber(res.total_points_distributed);
+  } catch(err) {
+    showToast("Statistikani yuklashda xatolik: " + err.message, 'error');
+  }
+}
+
+async function adminGrantPoints() {
+  const targetIdInput = document.getElementById('grant-user-id');
+  const amountInput = document.getElementById('grant-amount');
+  const targetId = targetIdInput.value ? targetIdInput.value.trim() : '';
+  const amount = amountInput.value ? amountInput.value.trim() : '';
+
+  if (!targetId || !amount) {
+    showToast("Barcha maydonlarni to'ldiring", 'warning');
+    return;
+  }
+
+  haptic.medium();
+  try {
+    const res = await apiCall('/api/admin/grant', 'POST', {
+      init_data: tg.initData,
+      target_id: targetId,
+      amount: amount
+    });
+    haptic.success();
+    showToast("Ball muvaffaqiyatli taqdim etildi!", 'success');
+    targetIdInput.value = '';
+    amountInput.value = '';
+    loadAdminStats();
+  } catch(err) {
+    haptic.error();
+    showToast(err.message, 'error');
+  }
+}
+
+async function adminAddCanva() {
+  const giftIdInput = document.getElementById('addcanva-gift-id');
+  const linkInput = document.getElementById('addcanva-link');
+  const giftId = giftIdInput.value ? giftIdInput.value.trim() : '';
+  const link = linkInput.value ? linkInput.value.trim() : '';
+
+  if (!giftId || !link) {
+    showToast("Barcha maydonlarni to'ldiring", 'warning');
+    return;
+  }
+
+  haptic.medium();
+  try {
+    await apiCall('/api/admin/addcanva', 'POST', {
+      init_data: tg.initData,
+      gift_id: giftId,
+      link: link
+    });
+    haptic.success();
+    showToast("Canva Pro havola muvaffaqiyatli qo'shildi!", 'success');
+    giftIdInput.value = '';
+    linkInput.value = '';
+  } catch(err) {
+    haptic.error();
+    showToast(err.message, 'error');
+  }
+}
+
+async function adminSendBroadcast() {
+  const textInput = document.getElementById('broadcast-text');
+  const text = textInput.value ? textInput.value.trim() : '';
+
+  if (!text) {
+    showToast("Xabar matnini kiriting", 'warning');
+    return;
+  }
+
+  if (!confirm("Haqiqatan ham ushbu reklamani barcha faol a'zolarga yubormoqchimisiz?")) {
+    return;
+  }
+
+  haptic.heavy();
+  try {
+    const res = await apiCall('/api/admin/broadcast', 'POST', {
+      init_data: tg.initData,
+      text: text
+    });
+    haptic.success();
+    showToast(res.message, 'success', 4000);
+    textInput.value = '';
+  } catch(err) {
+    haptic.error();
+    showToast(err.message, 'error');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
    STORAGE
    ════════════════════════════════════════════════════════════════════ */
 function saveActiveRedemption(r) {
@@ -1655,10 +1971,6 @@ function loadActiveRedemption() {
    BOOT
    ════════════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // Set initial pill
-  const pill = document.getElementById('nav-pill');
-  if (pill) pill.style.transform = 'translateX(0%)';
-
   // Init after small splash delay
   setTimeout(init, 100);
 });
