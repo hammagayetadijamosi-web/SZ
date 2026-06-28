@@ -1,726 +1,702 @@
-<!DOCTYPE html>
-<!-- 
-  index.html
-  Frontend for Telegram Mini App Ecosystem (v2.0)
-  Design System: iOS 26 Liquid Glass (Premium Space Theme)
-  Author: Antigravity AI
-  Date: 2026-06-28
--->
-<html lang="uz" class="h-full select-none">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Hammaga Yetadi</title>
-  
-  <!-- Tailwind CSS 3.x CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Telegram WebApp JS SDK -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            iosBlue: '#007AFF',
-            iosGreen: '#30D158',
-            iosOrange: '#FF9F0A',
-            iosRed: '#FF453A',
-            spaceBg: '#0A0A0F',
-          },
-          fontFamily: {
-            sans: [
-              '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 
-              '"Helvetica Neue"', 'Arial', 'sans-serif'
-            ],
-          }
+# flask_app.py
+# Complete backend for Telegram Mini App Ecosystem (v2.0)
+# Supports Direct Telegram API (Free Tier Friendly with Automatic Proxies)
+# No aiogram/supabase-py dependency conflicts.
+# Author: Antigravity AI
+# Date: 2026-06-28
+import os
+import sys
+import logging
+import hmac
+import hashlib
+import json
+import time
+import urllib.parse
+import requests as http_requests
+from flask import Flask, request, jsonify
+from dotenv import load_dotenv
+# Load environment variables
+load_dotenv()
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
+# Validate essential environment variables
+required_envs = [
+    "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHANNEL_ID",
+    "SUPABASE_URL", "SUPABASE_SERVICE_KEY",
+    "WEBHOOK_SECRET", "BOT_USERNAME", "APP_NAME", "MINI_APP_URL"
+]
+missing_envs = [env for env in required_envs if not os.getenv(env)]
+if missing_envs:
+    logger.critical("Missing env vars: %s", ', '.join(missing_envs))
+    sys.exit(1)
+# ─── TELEGRAM API ────────────────────────────────────────────────────
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_API = "https://api.telegram.org/bot" + BOT_TOKEN
+CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID")
+BOT_USERNAME = os.getenv("BOT_USERNAME")
+APP_NAME = os.getenv("APP_NAME")
+MINI_APP_URL = os.getenv("MINI_APP_URL")
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+ADMIN_SECRET = os.getenv("ADMIN_SECRET", "")
+# Load Admin IDs
+try:
+    ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()]
+except ValueError:
+    ADMIN_IDS = []
+def tg_api(method, data=None):
+    """Telegram Bot API-ga so'rov yuborish."""
+    url = TELEGRAM_API + "/" + method
+    try:
+        r = http_requests.post(url, json=data or {}, timeout=15)
+        return r.json()
+    except Exception as e:
+        logger.error("Telegram API xatosi (%s): %s", method, e)
+        return {"ok": False}
+def tg_send_message(chat_id, text, reply_markup=None):
+    """Telegram foydalanuvchiga xabar yuborish."""
+    data = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+    if reply_markup:
+        data["reply_markup"] = reply_markup
+    return tg_api("sendMessage", data)
+def tg_check_member(user_id):
+    """Foydalanuvchining kanalga a'zoligini tekshirish."""
+    try:
+        result = tg_api("getChatMember", {"chat_id": CHANNEL_ID, "user_id": user_id})
+        if result.get("ok"):
+            status = result["result"]["status"]
+            return status in ["creator", "administrator", "member"]
+        return False
+    except Exception:
+        logger.exception("Channel membership check failed for %s", user_id)
+        return False
+# ─── SUPABASE REST API ───────────────────────────────────────────────
+SUPABASE_URL = os.getenv("SUPABASE_URL").rstrip("/")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+SUPABASE_REST = SUPABASE_URL + "/rest/v1"
+SUPABASE_HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+}
+def db_select(table, params=None):
+    """Supabase jadvaldan ma'lumot o'qish."""
+    url = SUPABASE_REST + "/" + table
+    r = http_requests.get(url, headers=SUPABASE_HEADERS, params=params or {}, timeout=15)
+    r.raise_for_status()
+    return r.json()
+def db_insert(table, data):
+    """Supabase jadvalga yozuv qo'shish."""
+    url = SUPABASE_REST + "/" + table
+    h = dict(SUPABASE_HEADERS)
+    h["Prefer"] = "return=representation"
+    r = http_requests.post(url, headers=h, json=data, timeout=15)
+    r.raise_for_status()
+    return r.json()
+def db_update(table, data, match_column, match_value):
+    """Supabase jadvalda yozuvni yangilash."""
+    url = SUPABASE_REST + "/" + table
+    params = {match_column: "eq." + str(match_value)}
+    h = dict(SUPABASE_HEADERS)
+    h["Prefer"] = "return=representation"
+    r = http_requests.patch(url, headers=h, json=data, params=params, timeout=15)
+    r.raise_for_status()
+    return r.json()
+# ─── FLASK APP ────────────────────────────────────────────────────────
+app = Flask(__name__)
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token, X-Telegram-Bot-Api-Secret-Token'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    if request.method == 'OPTIONS':
+        response.status_code = 200
+    return response
+# ─── SECURITY ─────────────────────────────────────────────────────────
+def validate_webhook_secret(req):
+    """Webhook so'rovi Telegramdan kelganini tekshirish."""
+    token = req.headers.get('X-Telegram-Bot-Api-Secret-Token')
+    if not token or not WEBHOOK_SECRET:
+        return False
+    return hmac.compare_digest(token, WEBHOOK_SECRET)
+def validate_init_data(init_data_string):
+    """Telegram initData HMAC-SHA256 tekshiruvi."""
+    if not init_data_string:
+        return None
+    try:
+        parsed = dict(urllib.parse.parse_qsl(init_data_string))
+        if 'hash' not in parsed:
+            return None
+        received_hash = parsed.pop('hash')
+        check_string = "\n".join("%s=%s" % (k, parsed[k]) for k in sorted(parsed.keys()))
+        secret = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
+        computed = hmac.new(secret, check_string.encode(), hashlib.sha256).hexdigest()
+        if hmac.compare_digest(computed, received_hash):
+            user_str = parsed.get('user')
+            if user_str:
+                return json.loads(user_str)
+        return None
+    except Exception:
+        logger.exception("initData validation error")
+        return None
+# ─── RATE LIMITER ─────────────────────────────────────────────────────
+rate_limit_store = {}
+def is_rate_limited(ip, max_req=20, window=60):
+    now = time.time()
+    if ip not in rate_limit_store:
+        rate_limit_store[ip] = []
+    rate_limit_store[ip] = [t for t in rate_limit_store[ip] if now - t < window]
+    if len(rate_limit_store[ip]) >= max_req:
+        return True
+    rate_limit_store[ip].append(now)
+    return False
+# ─── DATABASE HELPERS ─────────────────────────────────────────────────
+def get_or_create_user(telegram_id, username=None, first_name="", last_name=None, referred_by=None):
+    """
+    Foydalanuvchini topish yoki yaratish.
+    Xavfsiz taklif tizimi: agar foydalanuvchi bazada yoki kanalda oldindan mavjud bo'lsa, taklif qiluvchi hisobga olinmaydi.
+    """
+    try:
+        users = db_select("users", {"telegram_id": "eq." + str(telegram_id)})
+        if users:
+            user = users[0]
+            db_update("users", {
+                "last_seen": "now()", "username": username,
+                "first_name": first_name, "last_name": last_name
+            }, "telegram_id", telegram_id)
+            user.update({"username": username, "first_name": first_name, "last_name": last_name})
+            return user
+        # Foydalanuvchi yangi. Lekin kanalda oldindan bormi?
+        is_already_in_channel = tg_check_member(telegram_id)
+        new_user = {
+            "telegram_id": telegram_id, "username": username,
+            "first_name": first_name, "last_name": last_name,
+            "referred_by": None, "points": 0, "referral_count": 0,
+            "is_active": False, "is_banned": False
         }
-      }
-    }
-  </script>
-
-  <style>
-    /* Custom CSS for Premium iOS 26 Liquid Glass Effects */
-    body {
-      background-color: #0A0A0F;
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(142, 68, 173, 0.12) 0%, transparent 40%);
-      background-attachment: fixed;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
-    }
-
-    /* Glassmorphism Cards */
-    .glass-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(30px) saturate(200%) brightness(1.05);
-      -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.05);
-      border: 0.5px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 
-        0 0 0 0.5px rgba(255, 255, 255, 0.05) inset,
-        0 20px 40px rgba(0, 0, 0, 0.5),
-        0 1px 0 rgba(255, 255, 255, 0.1) inset;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-
-    .glass-card:active {
-      transform: scale(0.99);
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    /* Subtly glowing accent buttons */
-    .btn-primary {
-      background: #007AFF;
-      box-shadow: 
-        0 4px 14px rgba(0, 122, 255, 0.35),
-        0 0 0 0.5px rgba(255, 255, 255, 0.2) inset;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary:active {
-      transform: scale(0.97);
-      background: #0062CC;
-      box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease;
-    }
-
-    .btn-secondary:active {
-      transform: scale(0.97);
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-    }
-
-    /* Keyframe animations */
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 15px rgba(0, 122, 255, 0.6)); }
-    }
-
-    .logo-pulse {
-      animation: pulse 3s infinite ease-in-out;
-    }
-
-    /* Toast animation */
-    @keyframes slideUp {
-      from { transform: translate(-50%, 100%); opacity: 0; }
-      to { transform: translate(-50%, 0); opacity: 1; }
-    }
-    .toast-animate {
-      animation: slideUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    /* Hide scrollbars for clean UI */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    
-    /* Loading Spinner */
-    .spinner {
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border-left-color: #ffffff;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body class="h-full text-white overflow-y-auto no-scrollbar pb-10">
-
-  <!-- ═══════════════════════════════════════
-       SCREEN 1: LOADING SCREEN
-       ═══════════════════════════════════════ -->
-  <div id="screen-loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0A0F]">
-    <div class="flex flex-col items-center space-y-6">
-      <!-- Pulsing Liquid Glass Logo -->
-      <div class="w-24 h-24 rounded-[28px] bg-gradient-to-tr from-iosBlue to-purple-600 flex items-center justify-center logo-pulse shadow-lg shadow-iosBlue/30 border border-white/20">
-        <span class="text-4xl font-bold tracking-wider text-white">H</span>
-      </div>
-      <div class="text-center space-y-2">
-        <h1 class="text-2xl font-semibold tracking-tight">Hammaga Yetadi</h1>
-        <p class="text-sm text-white/40 font-medium">Yuklanmoqda...</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       SCREEN 2: SUBSCRIPTION GATE
-       ═══════════════════════════════════════ -->
-  <div id="screen-subscription" class="hidden fixed inset-0 z-40 flex items-center justify-center p-6 bg-[#0A0A0F]/90 backdrop-blur-md">
-    <div class="glass-card w-full max-w-sm p-6 flex flex-col items-center text-center space-y-6">
-      <!-- Icon -->
-      <div class="w-16 h-16 rounded-2xl bg-iosBlue/10 border border-iosBlue/30 flex items-center justify-center text-3xl">
-        📢
-      </div>
-      <!-- Title & Text -->
-      <div class="space-y-2">
-        <h2 class="text-xl font-bold">Kanalga qo'shiling</h2>
-        <p class="text-sm text-white/60 leading-relaxed">
-          Ilovadan to'liq foydalanish va takliflar uchun mukofot ballarini olish uchun rasmiy kanalimizga a'zo bo'ling.
-        </p>
-      </div>
-      <!-- Actions -->
-      <div class="w-full space-y-3">
-        <button id="btn-join-channel" class="btn-primary w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2">
-          <span>📢 Kanalga o'tish</span>
-        </button>
-        <button id="btn-verify" class="btn-secondary w-full py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2">
-          <span id="btn-verify-text">✓ Tasdiqlash</span>
-          <div id="btn-verify-spinner" class="spinner hidden"></div>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       SCREEN 3: MAIN DASHBOARD
-       ═══════════════════════════════════════ -->
-  <div id="screen-dashboard" class="hidden px-4 pt-6 max-w-md mx-auto space-y-6">
-    
-    <!-- 3a. Header Section -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center space-y-1 gap-3">
-        <!-- User Initials Avatar -->
-        <div id="user-avatar" class="w-11 h-11 rounded-full bg-gradient-to-tr from-iosBlue to-purple-600 flex items-center justify-center font-bold text-sm border border-white/20 shadow-md">
-          U
-        </div>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-1.5">
-            <span id="user-name" class="font-semibold text-base leading-none">Foydalanuvchi</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-iosGreen animate-ping"></span>
-          </div>
-          <span id="user-username" class="text-xs text-white/40">@username</span>
-        </div>
-      </div>
-      <!-- Active Status Badge -->
-      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-iosGreen/10 border border-iosGreen/30 text-iosGreen flex items-center gap-1">
-        ✓ Faol
-      </span>
-    </div>
-
-    <!-- 3b. Points Balance Card (Hero Card) -->
-    <div class="glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden">
-      <!-- Ambient decorative glow -->
-      <div class="absolute -top-10 -left-10 w-24 h-24 bg-iosBlue/20 rounded-full blur-2xl"></div>
-      <div class="absolute -bottom-10 -right-10 w-24 h-24 bg-purple-600/20 rounded-full blur-2xl"></div>
-
-      <span class="text-xs font-semibold tracking-wider text-white/40 uppercase">Balans</span>
-      <div class="flex items-baseline mt-1">
-        <span id="balance-points" class="text-5xl font-bold tracking-tight">0</span>
-        <span class="text-lg font-medium text-white/60 ml-1.5">ball</span>
-      </div>
-
-      <!-- Stats Row -->
-      <div class="grid grid-cols-2 w-full mt-6 pt-4 border-t border-white/10 text-center">
-        <div class="border-r border-white/10">
-          <span class="text-[10px] uppercase tracking-wider text-white/40">Takliflar</span>
-          <p id="stat-referrals" class="text-lg font-semibold mt-0.5">0</p>
-        </div>
-        <div>
-          <span class="text-[10px] uppercase tracking-wider text-white/40">Reyting</span>
-          <p id="stat-rank" class="text-lg font-semibold mt-0.5">-</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3c. Referral Section Card -->
-    <div class="glass-card p-5 space-y-4">
-      <div class="space-y-1">
-        <h3 class="font-bold text-sm">Do'stlarni taklif qiling</h3>
-        <p class="text-xs text-white/55">Har bir taklif qilingan do'stingiz uchun 50 ball oling.</p>
-      </div>
-
-      <!-- Link Display Box -->
-      <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono select-all overflow-hidden text-ellipsis whitespace-nowrap">
-        <span id="ref-link-text" class="text-white/70 overflow-hidden text-ellipsis mr-2">Yuklanmoqda...</span>
-      </div>
-
-      <!-- Copy & Share Buttons -->
-      <div class="grid grid-cols-2 gap-3">
-        <button id="btn-copy" class="btn-secondary py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5">
-          <span>🔗 Nusxalash</span>
-        </button>
-        <button id="btn-share" class="btn-primary py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5">
-          <span>📤 Ulashish</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 3d. How It Works Section -->
-    <div class="glass-card p-5 space-y-4">
-      <h3 class="font-bold text-sm">Tizim qanday ishlaydi?</h3>
-      <div class="space-y-3.5">
-        <div class="flex items-start gap-3">
-          <div class="w-6 h-6 rounded-full bg-white/5 border border-white/12 flex items-center justify-center text-xs font-bold shrink-0">1</div>
-          <p class="text-xs text-white/70 leading-relaxed">Shaxsiy taklif havolangizni do'stlaringizga yuboring.</p>
-        </div>
-        <div class="flex items-start gap-3">
-          <div class="w-6 h-6 rounded-full bg-white/5 border border-white/12 flex items-center justify-center text-xs font-bold shrink-0">2</div>
-          <p class="text-xs text-white/70 leading-relaxed">Do'stingiz taklif havolangiz orqali kirib, kanalimizga a'zo bo'lsin.</p>
-        </div>
-        <div class="flex items-start gap-3">
-          <div class="w-6 h-6 rounded-full bg-white/5 border border-white/12 flex items-center justify-center text-xs font-bold shrink-0">3</div>
-          <p class="text-xs text-white/70 leading-relaxed">Do'stingiz a'zo bo'lgach, sizga <strong class="text-iosBlue">50 ball</strong>, do'stingizga <strong class="text-iosGreen">10 ball</strong> taqdim etiladi!</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3e. Leaderboard Section -->
-    <div class="glass-card p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-sm">Top Taklifchilar 🏆</h3>
-        <button id="btn-expand-leaderboard" class="text-xs text-iosBlue font-medium active:opacity-70">Hammasi →</button>
-      </div>
-
-      <!-- Leaderboard List -->
-      <div id="leaderboard-list" class="space-y-2.5">
-        <!-- Will be filled by JS -->
-        <div class="text-center py-4 text-xs text-white/30">Yuklanmoqda...</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       TOAST NOTIFICATION SYSTEM
-       ═══════════════════════════════════════ -->
-  <div id="toast-container" class="fixed left-1/2 bottom-8 -translate-x-1/2 z-50 w-[90%] max-w-xs pointer-events-none space-y-2">
-    <!-- Toasts will be dynamically appended here -->
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       JAVASCRIPT LOGIC
-       ═══════════════════════════════════════ -->
-  <script>
-    // ─── CONFIGURATION ────────────────────────────────────────────────
-    const API_BASE = 'https://dgdgjdd.pythonanywhere.com';
-    const CHANNEL_URL = 'https://t.me/hammagayetadi';
-    const BOT_USERNAME = 'hammagayetadi_bot';
-    const APP_NAME = 'hammagayetadi';
-
-
-    // ─── STATE MANAGEMENT ─────────────────────────────────────────────
-    const STATE = {
-      user: null,
-      isMember: false,
-      leaderboard: [],
-      fullLeaderboardMode: false,
-      isLoading: true
-    };
-
-    // ─── TELEGRAM WEB APP INIT ────────────────────────────────────────
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();                              // Expand to maximum height
-    tg.enableClosingConfirmation();           // Confirm before closing
-    tg.setHeaderColor('#0A0A0F');            // Match app background
-    tg.setBackgroundColor('#0A0A0F');
-
-    // ─── HAPTIC FEEDBACK HELPERS ──────────────────────────────────────
-    const haptic = {
-      light:   () => { try { tg.HapticFeedback.impactOccurred('light'); } catch(e){} },
-      medium:  () => { try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){} },
-      heavy:   () => { try { tg.HapticFeedback.impactOccurred('heavy'); } catch(e){} },
-      success: () => { try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){} },
-      warning: () => { try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){} },
-      error:   () => { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
-    };
-
-    // ─── INIT FLOW ────────────────────────────────────────────────────
-    async function init() {
-      showScreen('loading');
-      
-      const initData = tg.initData;             // Raw string for HMAC verification
-      // Retrieve referral code from Telegram deep link start_param
-      const startParam = tg.initDataUnsafe?.start_param ?? getQueryParam('startapp') ?? null;
-      
-      if (!initData) {
-        showErrorState("Telegram orqali kirish zarur");
-        return;
-      }
-      
-      try {
-        const res = await apiCall('/api/auth', 'POST', {
-          init_data: initData,
-          referral_code: startParam
-        });
-        
-        STATE.user = res.user;
-        STATE.isMember = res.is_member;
-        
-        if (STATE.isMember) {
-          renderDashboard();
-          showScreen('dashboard');
-          loadLeaderboard();  // Async load in background
-        } else {
-          showScreen('subscription');
+        # Agar taklif qiluvchi bo'lsa va taklif qilinuvchi kanalda oldindan bo'lmagan bo'lsa:
+        if referred_by and referred_by != telegram_id and not is_already_in_channel:
+            ref_check = db_select("users", {"telegram_id": "eq." + str(referred_by)})
+            if ref_check:
+                new_user["referred_by"] = referred_by
+        result = db_insert("users", new_user)
+        return result[0] if result else new_user
+    except Exception:
+        logger.exception("DB error: get_or_create_user %s", telegram_id)
+        raise
+def check_and_activate_user(telegram_id):
+    """Foydalanuvchini faollashtirish va ballarni hisoblash."""
+    try:
+        users = db_select("users", {"telegram_id": "eq." + str(telegram_id)})
+        if not users:
+            raise Exception("Foydalanuvchi topilmadi")
+        user = users[0]
+        if user["is_active"]:
+            return user
+        # Aktivatsiya bonusi: +10 ball
+        new_points = user["points"] + 10
+        updated = db_update("users", {
+            "is_active": True, "activated_at": "now()", "points": new_points
+        }, "telegram_id", telegram_id)
+        updated_user = updated[0] if updated else user
+        db_insert("transactions", {
+            "user_id": telegram_id, "amount": 10,
+            "type": "activation_bonus",
+            "description": "Kanalga a'zo bo'lganlik uchun bonus"
+        })
+        # Taklif qilganga ball berish
+        referrer_id = user.get("referred_by")
+        if referrer_id:
+            try:
+                db_insert("referral_events", {
+                    "referrer_id": referrer_id, "referred_id": telegram_id,
+                    "points_awarded": 50
+                })
+                referrers = db_select("users", {"telegram_id": "eq." + str(referrer_id)})
+                if referrers:
+                    ref = referrers[0]
+                    ref_points = ref["points"] + 50
+                    ref_count = ref["referral_count"] + 1
+                    db_update("users", {
+                        "points": ref_points, "referral_count": ref_count
+                    }, "telegram_id", referrer_id)
+                    db_insert("transactions", {
+                        "user_id": referrer_id, "amount": 50,
+                        "type": "referral_bonus",
+                        "description": "Taklif: %s" % user["first_name"]
+                    })
+                    tg_send_message(referrer_id,
+                        "🎉 <b>Tabriklaymiz!</b>\n\n"
+                        "%s sizning taklifingiz orqali qo'shildi.\n"
+                        "Hisobingizga +50 ball qo'shildi! 💰\n"
+                        "Joriy balansingiz: %d ball" % (user["first_name"], ref_points)
+                    )
+            except Exception as e:
+                logger.warning("Referral already processed or error: %s", e)
+        return updated_user
+    except Exception:
+        logger.exception("Error activating user %s", telegram_id)
+        raise
+# ─── TELEGRAM WEBHOOK ─────────────────────────────────────────────────
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if not validate_webhook_secret(request):
+        return 'Forbidden', 403
+    try:
+        update = request.get_json(force=True)
+        process_telegram_update(update)
+        return '', 200
+    except Exception:
+        logger.exception("Webhook processing error")
+        return '', 200
+def process_telegram_update(update):
+    """Telegram yangilanishini qayta ishlash."""
+    message = update.get("message")
+    if not message:
+        return
+    text = message.get("text", "")
+    caption = message.get("caption", "")
+    chat_id = message["chat"]["id"]
+    user = message.get("from", {})
+    user_id = user.get("id")
+    username = user.get("username")
+    first_name = user.get("first_name", "")
+    last_name = user.get("last_name")
+    # 1. Broadcast orqali yuborilgan har qanday mediaga javob yozish (/broadcast buyrug'i reply qilingan bo'lsa)
+    if text.startswith("/broadcast") or caption.startswith("/broadcast"):
+        if user_id in ADMIN_IDS:
+            handle_broadcast_command(chat_id, user_id, message)
+            return
+    if text.startswith("/start"):
+        handle_start(chat_id, user_id, username, first_name, last_name, text)
+    elif text == "/help":
+        handle_help(chat_id)
+    elif text == "/stats":
+        handle_stats(chat_id, user_id)
+    elif text == "/referral":
+        handle_referral(chat_id, user_id)
+    elif text.startswith("/grant") and user_id in ADMIN_IDS:
+        handle_grant(chat_id, user_id, text)
+# ─── BOT COMMAND HANDLERS ────────────────────────────────────────────
+def handle_start(chat_id, user_id, username, first_name, last_name, text):
+    referred_by = None
+    parts = text.split()
+    if len(parts) > 1 and parts[1].startswith("r_"):
+        try:
+            referred_by = int(parts[1].split("_")[1])
+        except (ValueError, IndexError):
+            pass
+    try:
+        get_or_create_user(user_id, username, first_name, last_name, referred_by)
+        webapp_url = MINI_APP_URL
+        start_param = parts[1] if len(parts) > 1 else None
+        if start_param:
+            webapp_url = "%s?startapp=%s" % (webapp_url, start_param)
+        welcome = (
+            "Assalomu alaykum, <b>%s</b>! 👋\n"
+            "Xush kelibsiz <b>Hammaga Yetadi</b> ilovasiga!\n\n"
+            "🎁 Do'stlarni taklif qilib ball to'plang.\n"
+            "📢 Kanalga obuna bo'lib, mukofotlarga ega bo'ling.\n\n"
+            "Boshlash uchun quyidagi tugmani bosing:"
+        ) % first_name
+        keyboard = {
+            "inline_keyboard": [[{
+                "text": "🚀 Ilovani ochish",
+                "web_app": {"url": webapp_url}
+            }]]
         }
-      } catch (err) {
-        showErrorState(err.message || "Tizimga bog'lanishda xatolik yuz berdi");
-      } finally {
-        // Minimum loading screen time of 1.5 seconds for premium feel
-        setTimeout(() => {
-          const loadingScreen = document.getElementById('screen-loading');
-          loadingScreen.style.opacity = '0';
-          loadingScreen.style.transition = 'opacity 0.3s ease';
-          setTimeout(() => loadingScreen.classList.add('hidden'), 300);
-        }, 1200);
-      }
+        tg_send_message(chat_id, welcome, keyboard)
+    except Exception:
+        logger.exception("Error in /start")
+        tg_send_message(chat_id, "Tizimda xatolik yuz berdi. Qayta urinib ko'ring.")
+def handle_help(chat_id):
+    tg_send_message(chat_id,
+        "🤖 <b>Bot yo'riqnomasi:</b>\n\n"
+        "1️⃣ <b>Ball yig'ish:</b>\n"
+        "• Kanalga obuna bo'lish: +10 ball\n"
+        "• Do'stlarni taklif qilish: +50 ball\n\n"
+        "2️⃣ <b>Buyruqlar:</b>\n"
+        "• /start - Ilovani ochish\n"
+        "• /stats - Statistika va reyting\n"
+        "• /referral - Shaxsiy taklif havolasi\n"
+        "• /help - Ushbu yo'riqnoma"
+    )
+def handle_stats(chat_id, user_id):
+    try:
+        users = db_select("users", {"telegram_id": "eq." + str(user_id)})
+        if not users:
+            tg_send_message(chat_id, "Avval /start buyrug'ini bosing.")
+            return
+        u = users[0]
+        all_active = db_select("users", {"is_active": "eq.true", "order": "points.desc", "select": "telegram_id"})
+        rank = "?"
+        for i, a in enumerate(all_active):
+            if a["telegram_id"] == user_id:
+                rank = i + 1
+                break
+        tg_send_message(chat_id,
+            "📊 <b>Sizning statistikangiz:</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━\n"
+            "💰 <b>Ball:</b> %d\n"
+            "👥 <b>Takliflar:</b> %d ta\n"
+            "🏆 <b>Reyting:</b> #%s\n"
+            "━━━━━━━━━━━━━━━━━━━━\n"
+            "Ko'proq do'stlarni taklif qiling!" % (u["points"], u["referral_count"], rank)
+        )
+    except Exception:
+        logger.exception("Error in /stats")
+        tg_send_message(chat_id, "Xatolik yuz berdi.")
+def handle_referral(chat_id, user_id):
+    ref_link = "https://t.me/%s/%s?startapp=r_%s" % (BOT_USERNAME, APP_NAME, user_id)
+    share_text = "Do'stim, bu ajoyib ilovaga qo'shil! 🎁"
+    share_url = "https://t.me/share/url?url=%s&text=%s" % (
+        urllib.parse.quote(ref_link), urllib.parse.quote(share_text)
+    )
+    keyboard = {
+        "inline_keyboard": [[{"text": "📤 Do'stlarga ulashish", "url": share_url}]]
     }
-
-    // ─── API LAYER ────────────────────────────────────────────────────
-    async function apiCall(endpoint, method = 'GET', body = null) {
-      const url = API_BASE.replace(/\/$/, '') + endpoint;
-      const options = {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-      if (body) {
-        options.body = JSON.stringify(body);
-      }
-      
-      try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || `HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.error || "Noma'lum xatolik");
-        }
-        return data;
-      } catch (e) {
-        console.error("API Call failed:", e);
-        throw e;
-      }
-    }
-
-    // ─── VERIFY SUBSCRIPTION ─────────────────────────────────────────
-    async function verifySubscription() {
-      haptic.medium();
-      setButtonLoading('btn-verify', true);
-      
-      try {
-        const res = await apiCall('/api/verify', 'POST', {
-          init_data: tg.initData
-        });
+    tg_send_message(chat_id,
+        "🔗 <b>Sizning taklif havolangiz:</b>\n%s\n\n"
+        "Do'stlaringizga ulashing — ular kanalga a'zo bo'lsa, sizga +50 ball taqdim etiladi!" % ref_link,
+        keyboard
+    )
+def handle_grant(chat_id, admin_id, text):
+    parts = text.split()
+    if len(parts) != 3:
+        tg_send_message(chat_id, "Foydalanish: /grant [user_id] [ball]")
+        return
+    try:
+        target_id = int(parts[1])
+        amount = int(parts[2])
+        users = db_select("users", {"telegram_id": "eq." + str(target_id)})
+        if not users:
+            tg_send_message(chat_id, "Foydalanuvchi topilmadi.")
+            return
+        u = users[0]
+        new_pts = u["points"] + amount
+        db_update("users", {"points": new_pts}, "telegram_id", target_id)
+        db_insert("transactions", {
+            "user_id": target_id, "amount": amount,
+            "type": "admin_grant",
+            "description": "Admin (%d) tomonidan" % admin_id
+        })
+        tg_send_message(target_id,
+            "🎁 Hisobingizga %d ball qo'shildi!\nBalansingiz: %d ball" % (amount, new_pts)
+        )
+        tg_send_message(chat_id, "✅ %d ga %d ball yuborildi." % (target_id, amount))
+    except ValueError:
+        tg_send_message(chat_id, "ID va miqdor son bo'lishi kerak.")
+    except Exception:
+        logger.exception("Grant error")
+        tg_send_message(chat_id, "Xatolik yuz berdi.")
+# ─── MEDIA BROADCAST LOGIC (ADMIN ONLY) ──────────────────────────────
+def handle_broadcast_command(chat_id, admin_id, message):
+    """
+    Kengaytirilgan reklama tizimi: Rasm, Video, Fayl, Audio yoki matnni barcha faol a'zolarga yuborish.
+    Admin biror xabarni (masalan rasm yoki videoni) yozib, tagiga yoki unga javob qilib /broadcast yozishi mumkin.
+    """
+    reply_to = message.get("reply_to_message")
+    target_msg = reply_to if reply_to else message
+    # Matnni aniqlash (reklama xabari)
+    broadcast_text = ""
+    if reply_to:
+        broadcast_text = target_msg.get("text", "") or target_msg.get("caption", "")
+    else:
+        # Direct command: /broadcast matn yoki rasm tagida /broadcast yozilgan
+        cmd_text = message.get("text", "")
+        cmd_caption = message.get("caption", "")
+        if cmd_text.startswith("/broadcast"):
+            broadcast_text = cmd_text[10:].strip()
+        elif cmd_caption.startswith("/broadcast"):
+            broadcast_text = cmd_caption[10:].strip()
+    # Barcha faol foydalanuvchilarni olish
+    try:
+        active_users = db_select("users", {"is_active": "eq.true", "select": "telegram_id"})
+    except Exception as e:
+        logger.error("Broadcast uchun foydalanuvchilarni olishda xatolik: %s", e)
+        tg_send_message(chat_id, "Baza bilan ulanish xatosi.")
+        return
+    if not active_users:
+        tg_send_message(chat_id, "Faol foydalanuvchilar topilmadi.")
+        return
+    status_msg = tg_send_message(chat_id, "📢 Reklama yuborish boshlandi (Jami: %d ta)..." % len(active_users))
+    status_msg_id = status_msg.get("result", {}).get("message_id")
+    # DB ga e'lonni saqlash
+    broadcast_rec = db_insert("broadcasts", {
+        "admin_id": admin_id,
+        "message_text": broadcast_text or "[Media Fayl]",
+        "status": "running"
+    })
+    bid = broadcast_rec[0]["id"] if broadcast_rec else None
+    sent, failed = 0, 0
+    # Media turini aniqlash va mos metodni tanlash
+    method = "sendMessage"
+    media_key = "text"
+    media_id = None
+    if "photo" in target_msg:
+        method = "sendPhoto"
+        media_key = "photo"
+        media_id = target_msg["photo"][-1]["file_id"]  # Eng katta o'lchamdagi rasm
+    elif "video" in target_msg:
+        method = "sendVideo"
+        media_key = "video"
+        media_id = target_msg["video"]["file_id"]
+    elif "document" in target_msg:
+        method = "sendDocument"
+        media_key = "document"
+        media_id = target_msg["document"]["file_id"]
+    elif "audio" in target_msg:
+        method = "sendAudio"
+        media_key = "audio"
+        media_id = target_msg["audio"]["file_id"]
+    elif "voice" in target_msg:
+        method = "sendVoice"
+        media_key = "voice"
+        media_id = target_msg["voice"]["file_id"]
+    elif "animation" in target_msg:
+        method = "sendAnimation"
+        media_key = "animation"
+        media_id = target_msg["animation"]["file_id"]
+    for u in active_users:
+        target_chat_id = u["telegram_id"]
+        # Har bir userga mos ravishda jo'natish
+        payload = {"chat_id": target_chat_id}
+        if method == "sendMessage":
+            payload["text"] = broadcast_text
+            payload["parse_mode"] = "HTML"
+        else:
+            payload[media_key] = media_id
+            if broadcast_text:
+                payload["caption"] = broadcast_text
+                payload["parse_mode"] = "HTML"
         
-        STATE.user = res.user;
-        STATE.isMember = true;
+        result = tg_api(method, payload)
+        if result.get("ok"):
+            sent += 1
+        else:
+            failed += 1
         
-        haptic.success();
-        showToast("✅ Muvaffaqiyatli a'zo bo'lindi!", 'success');
-        
-        // Wait 1s for the toast to be readable, then transition
-        setTimeout(() => {
-          renderDashboard();
-          showScreen('dashboard');
-          loadLeaderboard();
-        }, 1000);
-        
-      } catch (err) {
-        haptic.error();
-        showToast(err.message || "Kanalga a'zolik tasdiqlanmadi", 'error');
-      } finally {
-        setButtonLoading('btn-verify', false);
-      }
-    }
-
-    // ─── LEADERBOARD ─────────────────────────────────────────────────
-    async function loadLeaderboard() {
-      try {
-        const res = await apiCall('/api/leaderboard');
-        STATE.leaderboard = res.leaderboard;
-        renderLeaderboard();
-      } catch (err) {
-        console.error("Failed to load leaderboard", err);
-      }
-    }
-
-    // ─── COPY REFERRAL LINK ──────────────────────────────────────────
-    async function copyReferralLink() {
-      haptic.light();
-      const link = document.getElementById('ref-link-text').textContent;
-      
-      try {
-        await navigator.clipboard.writeText(link);
-        showToast("✅ Havola nusxalandi!", 'success');
-        haptic.success();
-      } catch (err) {
-        // Fallback for some webview browsers
-        try {
-          tg.showPopup({
-            title: "Havola",
-            message: link,
-            buttons: [{type: "close", text: "Yopish"}]
-          });
-        } catch(e) {
-          showToast("Nusxalash imkoni bo'lmadi", 'error');
-        }
-      }
-    }
-
-    // ─── SHARE VIA TELEGRAM ──────────────────────────────────────────
-    function shareReferralLink() {
-      haptic.medium();
-      const link = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${STATE.user.telegram_id}`;
-      const text = `Do'stim, bu ajoyib ilovaga qo'shil va ballarga ega bo'l! 🎁\n\n${link}`;
-      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-      tg.openTelegramLink(shareUrl);
-    }
-
-    // ─── UI RENDER HELPERS ────────────────────────────────────────────
-    
-    function showScreen(screenId) {
-      // Hide all screens
-      document.getElementById('screen-subscription').classList.add('hidden');
-      document.getElementById('screen-dashboard').classList.add('hidden');
-      
-      // Show requested screen
-      if (screenId === 'subscription') {
-        document.getElementById('screen-subscription').classList.remove('hidden');
-      } else if (screenId === 'dashboard') {
-        document.getElementById('screen-dashboard').classList.remove('hidden');
-        
-        // Show Telegram Native Main Button in Dashboard
-        tg.MainButton.setParams({
-          text: "📤 Ulashish",
-          color: "#007AFF",
-          text_color: "#FFFFFF",
-          is_active: true,
-          is_visible: true
-        });
-        tg.MainButton.onClick(shareReferralLink);
-      }
-    }
-
-    function renderDashboard() {
-      if (!STATE.user) return;
-      
-      // Setup Avatar (Initials)
-      const name = STATE.user.first_name || "Foydalanuvchi";
-      const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
-      document.getElementById('user-avatar').textContent = initials;
-      
-      // Set User Texts
-      document.getElementById('user-name').textContent = name;
-      document.getElementById('user-username').textContent = STATE.user.username ? `@${STATE.user.username}` : '';
-      
-      // Set Balance and Stats
-      document.getElementById('balance-points').textContent = formatNumber(STATE.user.points);
-      document.getElementById('stat-referrals').textContent = formatNumber(STATE.user.referral_count);
-      
-      // Set Referral Link text
-      const refLink = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${STATE.user.telegram_id}`;
-      document.getElementById('ref-link-text').textContent = refLink;
-
-      // Calculate Rank
-      determineUserRank();
-    }
-
-    function determineUserRank() {
-      if (STATE.leaderboard.length === 0) return;
-      const myId = STATE.user.telegram_id;
-      // Note: Leaderboard items returned from API do not include telegram_id for privacy,
-      // but we can find our position if we match username or points.
-      let rank = "-";
-      for (let i = 0; i < STATE.leaderboard.length; i++) {
-        const item = STATE.leaderboard[i];
-        // Match by username or if points match and we are in the list
-        if (STATE.user.username && item.username === `@${STATE.user.username}`) {
-          rank = item.rank;
-          break;
-        }
-      }
-      document.getElementById('stat-rank').textContent = rank !== "-" ? `#${rank}` : '-';
-    }
-
-    function renderLeaderboard() {
-      const container = document.getElementById('leaderboard-list');
-      container.innerHTML = '';
-      
-      const listToRender = STATE.fullLeaderboardMode 
-        ? STATE.leaderboard 
-        : STATE.leaderboard.slice(0, 5);
-        
-      if (listToRender.length === 0) {
-        container.innerHTML = `<div class="text-center py-4 text-xs text-white/30">Hozircha ma'lumot yo'q</div>`;
-        return;
-      }
-      
-      listToRender.forEach(item => {
-        const row = document.createElement('div');
-        row.className = "flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 text-xs";
-        
-        // Rank display
-        let rankBadge = '';
-        if (item.rank === 1) {
-          rankBadge = `<span class="w-6 h-6 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/40 text-[#FFD700] flex items-center justify-center font-bold">1</span>`;
-        } else if (item.rank === 2) {
-          rankBadge = `<span class="w-6 h-6 rounded-full bg-[#C0C0C0]/20 border border-[#C0C0C0]/40 text-[#C0C0C0] flex items-center justify-center font-bold">2</span>`;
-        } else if (item.rank === 3) {
-          rankBadge = `<span class="w-6 h-6 rounded-full bg-[#CD7F32]/20 border border-[#CD7F32]/40 text-[#CD7F32] flex items-center justify-center font-bold">3</span>`;
-        } else {
-          rankBadge = `<span class="w-6 h-6 rounded-full bg-white/5 border border-white/10 text-white/50 flex items-center justify-center font-semibold">${item.rank}</span>`;
-        }
-        
-        const displayName = item.first_name;
-        const displayUsername = item.username ? `<span class="text-[10px] text-white/40 block">${item.username}</span>` : '';
-        
-        row.innerHTML = `
-          <div class="flex items-center gap-3">
-            ${rankBadge}
-            <div class="flex flex-col">
-              <span class="font-medium">${displayName}</span>
-              ${displayUsername}
-            </div>
-          </div>
-          <div class="text-right">
-            <span class="font-bold text-white">${formatNumber(item.points)}</span>
-            <span class="text-[10px] text-white/40 block">${formatNumber(item.referral_count)} do'st</span>
-          </div>
-        `;
-        container.appendChild(row);
-      });
-
-      // Update Rank in Stats Card if we are loaded
-      determineUserRank();
-    }
-
-    // ─── TOAST SYSTEM ────────────────────────────────────────────────
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      
-      const toast = document.createElement('div');
-      toast.className = `toast-animate w-full p-4 rounded-2xl text-xs font-semibold text-white flex items-center gap-3 shadow-lg border border-white/10 backdrop-blur-md`;
-      
-      let bgClass = 'bg-[#0A0A0F]/80';
-      let borderLeft = 'border-l-4 border-l-iosBlue';
-      
-      if (type === 'success') {
-        borderLeft = 'border-l-4 border-l-iosGreen';
-      } else if (type === 'error') {
-        borderLeft = 'border-l-4 border-l-iosRed';
-      } else if (type === 'warning') {
-        borderLeft = 'border-l-4 border-l-iosOrange';
-      }
-      
-      toast.className += ` ${bgClass} ${borderLeft}`;
-      toast.textContent = message;
-      
-      container.appendChild(toast);
-      
-      // Auto dismiss after 3 seconds
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translate(-50%, 20px)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
-
-    function setButtonLoading(buttonId, isLoading) {
-      const btn = document.getElementById(buttonId);
-      const text = document.getElementById(`${buttonId}-text`);
-      const spinner = document.getElementById(`${buttonId}-spinner`);
-      
-      if (isLoading) {
-        btn.style.pointerEvents = 'none';
-        btn.style.opacity = '0.7';
-        if (text) text.classList.add('hidden');
-        if (spinner) spinner.classList.remove('hidden');
-      } else {
-        btn.style.pointerEvents = 'auto';
-        btn.style.opacity = '1';
-        if (text) text.classList.remove('hidden');
-        if (spinner) spinner.classList.add('hidden');
-      }
-    }
-
-    function showErrorState(message) {
-      const loadingText = document.querySelector('#screen-loading p');
-      if (loadingText) {
-        loadingText.textContent = message;
-        loadingText.className = "text-sm text-iosRed font-semibold mt-2";
-      }
-      showToast(message, 'error');
-    }
-
-    // ─── UTILITY FUNCTIONS ────────────────────────────────────────────
-    function formatNumber(num) {
-      return new Intl.NumberFormat('en-US').format(num);
-    }
-
-    function getQueryParam(name) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name);
-    }
-
-    // ─── EVENT LISTENERS ─────────────────────────────────────────────
-    
-    // Join Channel Button click
-    document.getElementById('btn-join-channel').addEventListener('click', () => {
-      haptic.medium();
-      tg.openTelegramLink(CHANNEL_URL);
-    });
-
-    // Verify Subscription Button click
-    document.getElementById('btn-verify').addEventListener('click', verifySubscription);
-
-    // Copy Link Button click
-    document.getElementById('btn-copy').addEventListener('click', copyReferralLink);
-
-    // Share Link Button click
-    document.getElementById('btn-share').addEventListener('click', shareReferralLink);
-
-    // Expand Leaderboard Button click
-    document.getElementById('btn-expand-leaderboard').addEventListener('click', () => {
-      haptic.light();
-      STATE.fullLeaderboardMode = !STATE.fullLeaderboardMode;
-      const btn = document.getElementById('btn-expand-leaderboard');
-      if (STATE.fullLeaderboardMode) {
-        btn.textContent = "← Qisqartirish";
-      } else {
-        btn.textContent = "Hammasi →";
-      }
-      renderLeaderboard();
-    });
-
-    // Start initialization when DOM is ready
-    document.addEventListener('DOMContentLoaded', init);
-
-  </script>
-</body>
-</html>
+        # Telegram Flood cheklovlarini chetlab o'tish
+        time.sleep(0.04)
+    # Statusni yangilash
+    if bid:
+        db_update("broadcasts", {"sent_count": sent, "failed_count": failed, "status": "done"}, "id", bid)
+    report = (
+        "📢 <b>Reklama yakunlandi!</b>\n\n"
+        "✅ Muvaffaqiyatli yuborildi: %d\n"
+        "❌ Muvaffaqiyatsiz: %d"
+    ) % (sent, failed)
+    if status_msg_id:
+        tg_api("editMessageText", {"chat_id": chat_id, "message_id": status_msg_id, "text": report, "parse_mode": "HTML"})
+    else:
+        tg_send_message(chat_id, report)
+# ─── MINI APP API ENDPOINTS ──────────────────────────────────────────
+@app.route('/api/auth', methods=['POST', 'OPTIONS'])
+def api_auth():
+    if request.method == 'OPTIONS':
+        return '', 200
+    if is_rate_limited(request.remote_addr):
+        return jsonify({"success": False, "error": "Tezlik cheklovi"}), 429
+    data = request.json or {}
+    user_info = validate_init_data(data.get("init_data"))
+    if not user_info:
+        return jsonify({"success": False, "error": "Avtorizatsiya xatosi"}), 401
+    tid = user_info.get("id")
+    uname = user_info.get("username")
+    fname = user_info.get("first_name", "")
+    lname = user_info.get("last_name", "")
+    referred_by_id = None
+    rc = data.get("referral_code")
+    if rc and rc.startswith("r_"):
+        try:
+            referred_by_id = int(rc.split("_")[1])
+        except (ValueError, IndexError):
+            pass
+    try:
+        user = get_or_create_user(tid, uname, fname, lname, referred_by_id)
+        is_member = tg_check_member(tid)
+        if is_member:
+            user = check_and_activate_user(tid)
+        return jsonify({
+            "success": True,
+            "user": {
+                "telegram_id": user["telegram_id"], "username": user["username"],
+                "first_name": user["first_name"], "points": user["points"],
+                "referral_count": user["referral_count"], "is_active": user["is_active"]
+            },
+            "is_member": is_member,
+            "referral_link": "https://t.me/%s/%s?startapp=r_%s" % (BOT_USERNAME, APP_NAME, tid)
+        })
+    except Exception:
+        logger.exception("Error in /api/auth")
+        return jsonify({"success": False, "error": "Server xatosi"}), 500
+@app.route('/api/verify', methods=['POST', 'OPTIONS'])
+def api_verify():
+    if request.method == 'OPTIONS':
+        return '', 200
+    if is_rate_limited(request.remote_addr):
+        return jsonify({"success": False, "error": "Tezlik cheklovi"}), 429
+    data = request.json or {}
+    user_info = validate_init_data(data.get("init_data"))
+    if not user_info:
+        return jsonify({"success": False, "error": "Avtorizatsiya xatosi"}), 401
+    tid = user_info.get("id")
+    try:
+        if not tg_check_member(tid):
+            return jsonify({"success": False, "error": "Siz hali kanalga a'zo bo'lmadingiz."})
+        user = check_and_activate_user(tid)
+        return jsonify({
+            "success": True,
+            "user": {
+                "telegram_id": user["telegram_id"], "username": user["username"],
+                "first_name": user["first_name"], "points": user["points"],
+                "referral_count": user["referral_count"], "is_active": user["is_active"]
+            }
+        })
+    except Exception:
+        logger.exception("Error in /api/verify")
+        return jsonify({"success": False, "error": "Server xatosi"}), 500
+@app.route('/api/leaderboard', methods=['GET', 'OPTIONS'])
+def api_leaderboard():
+    if request.method == 'OPTIONS':
+        return '', 200
+    try:
+        users = db_select("users", {
+            "is_active": "eq.true", "order": "points.desc",
+            "limit": "20", "select": "first_name,username,points,referral_count"
+        })
+        board = []
+        for i, u in enumerate(users or []):
+            un = u.get("username")
+            masked = None
+            if un:
+                masked = "@%s***%s" % (un[:2], un[-2:]) if len(un) > 4 else "@%s***" % un[0]
+            board.append({
+                "rank": i + 1, "first_name": u.get("first_name", "Foydalanuvchi"),
+                "username": masked, "points": u.get("points", 0),
+                "referral_count": u.get("referral_count", 0)
+            })
+        return jsonify({"success": True, "leaderboard": board})
+    except Exception:
+        logger.exception("Error in /api/leaderboard")
+        return jsonify({"success": False, "error": "Server xatosi"}), 500
+# ─── GIFTS SHOP ENDPOINTS ────────────────────────────────────────────
+@app.route('/api/gifts', methods=['GET', 'OPTIONS'])
+def api_gifts():
+    """Barcha faol sovg'alar ro'yxatini qaytarish."""
+    if request.method == 'OPTIONS':
+        return '', 200
+    try:
+        gifts = db_select("gifts", {"is_active": "eq.true", "order": "points_cost.asc"})
+        return jsonify({"success": True, "gifts": gifts})
+    except Exception:
+        logger.exception("Error fetching gifts")
+        return jsonify({"success": False, "error": "Sovg'alarni yuklashda xatolik"}), 500
+@app.route('/api/redeem', methods=['POST', 'OPTIONS'])
+def api_redeem():
+    """Sovg'ani ballarga almashtirish so'rovi."""
+    if request.method == 'OPTIONS':
+        return '', 200
+    if is_rate_limited(request.remote_addr, max_req=10):
+        return jsonify({"success": False, "error": "Tezlik cheklovi"}), 429
+    data = request.json or {}
+    user_info = validate_init_data(data.get("init_data"))
+    if not user_info:
+        return jsonify({"success": False, "error": "Avtorizatsiya xatosi"}), 401
+    tid = user_info.get("id")
+    gift_id = data.get("gift_id")
+    if not gift_id:
+        return jsonify({"success": False, "error": "Noto'g'ri sovg'a IDsi"}), 400
+    try:
+        # 1. Userni tekshirish
+        users = db_select("users", {"telegram_id": "eq." + str(tid)})
+        if not users:
+            return jsonify({"success": False, "error": "Foydalanuvchi topilmadi"}), 404
+        user = users[0]
+        # 2. Sovg'ani tekshirish
+        gifts = db_select("gifts", {"id": "eq." + str(gift_id), "is_active": "eq.true"})
+        if not gifts:
+            return jsonify({"success": False, "error": "Sovg'a mavjud emas yoki o'chirilgan"}), 404
+        gift = gifts[0]
+        # 3. Stokni tekshirish
+        if gift["stock"] == 0:
+            return jsonify({"success": False, "error": "Bu sovg'a hozirda tugagan"}), 400
+        # 4. Ball etarli ekanligini tekshirish
+        if user["points"] < gift["points_cost"]:
+            return jsonify({"success": False, "error": "Ballaringiz etarli emas"}), 400
+        # 5. Ballarni chegirib tashlash
+        new_pts = user["points"] - gift["points_cost"]
+        db_update("users", {"points": new_pts}, "telegram_id", tid)
+        # 6. Stokni kamaytirish (agar cheklangan bo'lsa)
+        if gift["stock"] > 0:
+            db_update("gifts", {"stock": gift["stock"] - 1}, "id", gift_id)
+        # 7. Tranzaksiyani yozish
+        db_insert("transactions", {
+            "user_id": tid,
+            "amount": -gift["points_cost"],
+            "type": "redeem",
+            "description": "Sovg'aga almashtirildi: %s" % gift["name"]
+        })
+        # 8. Almashtirish (redemption) so'rovini yaratish
+        redemption_record = db_insert("redemptions", {
+            "user_id": tid,
+            "gift_id": gift_id,
+            "status": "pending"
+        })
+        # 9. Foydalanuvchiga bot orqali xabar yuborish
+        user_msg = (
+            "🎁 <b>Sovg'aga almashtirish so'rovingiz qabul qilindi!</b>\n\n"
+            "• <b>Sovg'a:</b> %s\n"
+            "• <b>Sarflangan ball:</b> %d\n"
+            "• <b>Holati:</b> Kutilmoqda ⏳\n\n"
+            "Adminlarimiz tez orada so'rovni ko'rib chiqib, siz bilan bog'lanishadi yoki sovg'ani bot orqali yuborishadi."
+        ) % (gift["name"], gift["points_cost"])
+        tg_send_message(tid, user_msg)
+        # 10. Adminlarga xabar yuborish
+        admin_msg = (
+            "🚨 <b>Yangi sovg'a so'rovi!</b>\n\n"
+            "👤 <b>Foydalanuvchi:</b> %s (ID: %d)\n"
+            "🎁 <b>Sovg'a:</b> %s\n"
+            "💰 <b>Narxi:</b> %d ball\n"
+            "📝 <b>Holati:</b> Tasdiqlash kutilmoqda\n\n"
+            "So'rov ID: <code>%s</code>"
+        ) % (user["first_name"], tid, gift["name"], gift["points_cost"], redemption_record[0]["id"] if redemption_record else "Noma'lum")
+        for aid in ADMIN_IDS:
+            tg_send_message(aid, admin_msg)
+        return jsonify({
+            "success": True,
+            "user": {
+                "telegram_id": tid,
+                "points": new_pts
+            }
+        })
+    except Exception:
+        logger.exception("Redeem error")
+        return jsonify({"success": False, "error": "So'rovni qayta ishlashda xatolik"}), 500
+# ─── STATS ENDPOINT ──────────────────────────────────────────────────
+@app.route('/api/stats', methods=['GET', 'OPTIONS'])
+def api_stats():
+    if request.method == 'OPTIONS':
+        return '', 200
+    if request.headers.get("X-Admin-Token") != ADMIN_SECRET:
+        return jsonify({"success": False, "error": "Taqiqlangan"}), 403
+    try:
+        all_u = db_select("users", {"select": "telegram_id,points,is_active,referral_count,first_name"})
+        active = [u for u in all_u if u.get("is_active")]
+        total_pts = sum(u.get("points", 0) for u in all_u)
+        top = max(all_u, key=lambda x: x.get("referral_count", 0), default={"first_name": "Yo'q", "referral_count": 0})
+        return jsonify({
+            "success": True, "total_users": len(all_u), "active_users": len(active),
+            "total_points_distributed": total_pts,
+            "top_referrer": {"name": top.get("first_name"), "referrals": top.get("referral_count")}
+        })
+    except Exception:
+        logger.exception("Error in /api/stats")
+        return jsonify({"success": False, "error": "Server xatosi"}), 500
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
