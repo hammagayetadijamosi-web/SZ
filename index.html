@@ -1,21 +1,25 @@
 <!DOCTYPE html>
-<!-- 
-  index.html
-  Frontend for Telegram Mini App Ecosystem (v2.0)
-  Design System: iOS 26 Liquid Glass (Specular Edition)
+<!--
+  index.html  (v3.0 — iOS 26 Liquid Glass Premium Edition)
+  Frontend for "Hammaga Yetadi" Telegram Mini App
+  - Haqiqiy Apple-style Liquid Glass (blur, saturate, specular highlights)
+  - 3D premium ikonlar (realistik SVG, gradient, shadow)
+  - Premium Capsule Navbar (doira + capsule)
+  - Canva Pro linkini himoya qilish (no copy / no select / no contextmenu)
   Author: Antigravity AI
   Date: 2026-06-28
 -->
-<html lang="uz" class="h-full select-none">
+<html lang="uz" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
   <title>Hammaga Yetadi</title>
-  
-  <!-- Tailwind CSS 3.x CDN -->
+
+  <!-- Tailwind CSS 3.x -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Telegram WebApp JS SDK -->
+
+  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <script>
@@ -23,16 +27,20 @@
       theme: {
         extend: {
           colors: {
-            iosBlue: '#007AFF',
-            iosGreen: '#34C759',
-            iosOrange: '#FF9500',
-            iosRed: '#FF3B30',
-            iosIndigo: '#5856D6',
-            spaceBg: '#090A11',
+            iosBlue:   '#0A84FF',
+            iosIndigo: '#5E5CE6',
+            iosPurple: '#BF5AF2',
+            iosPink:   '#FF375F',
+            iosGreen:  '#30D158',
+            iosOrange: '#FF9F0A',
+            iosYellow: '#FFD60A',
+            iosRed:    '#FF453A',
+            iosGray:   '#8E8E93',
+            spaceBg:   '#000000',
           },
           fontFamily: {
             sans: [
-              '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 
+              '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"',
               '"Helvetica Neue"', 'Arial', 'sans-serif'
             ],
           }
@@ -43,471 +51,701 @@
 
   <style>
     :root {
-      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-top:    env(safe-area-inset-top,    0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --glass-tint:  rgba(255, 255, 255, 0.06);
+      --glass-edge:  rgba(255, 255, 255, 0.14);
+    }
+
+    * { -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overscroll-behavior-y: none;
     }
 
     body {
-      background-color: #05060A;
-      background-attachment: fixed;
-      -webkit-font-smoothing: antialiased;
+      color: #fff;
       overflow-x: hidden;
-      background-image: 
-        radial-gradient(circle at 10% 10%, rgba(0, 122, 255, 0.16) 0%, transparent 45%),
-        radial-gradient(circle at 90% 40%, rgba(88, 86, 214, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 50% 90%, rgba(52, 199, 89, 0.06) 0%, transparent 40%);
-      padding-top: calc(12px + var(--safe-top));
-      padding-bottom: calc(110px + var(--safe-bottom));
+      background:
+        radial-gradient(1200px 600px at 12% -10%, rgba(10, 132, 255, 0.28), transparent 60%),
+        radial-gradient(1000px 700px at 100% 30%, rgba(191, 90, 242, 0.22), transparent 60%),
+        radial-gradient(800px 800px at 50% 110%, rgba(255, 55, 95, 0.16), transparent 60%),
+        #050507;
+      background-attachment: fixed;
+      padding-top:    calc(20px + var(--safe-top));
+      padding-bottom: calc(140px + var(--safe-bottom));
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    /* iOS 26 High-Fidelity Glassmorphism */
-    .ios-glass {
-      background: rgba(25, 27, 38, 0.55);
-      backdrop-filter: blur(24px) saturate(190%) brightness(1.05);
-      -webkit-backdrop-filter: blur(24px) saturate(190%) brightness(1.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0px rgba(255, 255, 255, 0.12),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.3);
-      border-radius: 24px;
+    /* ───────────────────────────────────────────────
+       LIQUID GLASS SYSTEM  (iOS 26 Spec)
+       ─────────────────────────────────────────────── */
+    .liquid-glass {
+      background: var(--glass-tint);
+      backdrop-filter: blur(50px) saturate(220%) brightness(1.15);
+      -webkit-backdrop-filter: blur(50px) saturate(220%) brightness(1.15);
+      border: 1px solid var(--glass-edge);
+      border-radius: 32px;
+      box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.55),
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1.5px 0.5px rgba(255, 255, 255, 0.28),
+        inset 0 -1.5px 0.5px rgba(0, 0, 0, 0.35);
       position: relative;
       overflow: hidden;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    /* Specular light reflections to mimic premium glass */
-    .ios-glass::after {
+    .liquid-glass::before {
       content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 40%;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg,
+        rgba(255,255,255,0.10) 0%,
+        rgba(255,255,255,0.02) 45%,
+        rgba(255,255,255,0)    65%,
+        rgba(0,0,0,0.10)      100%);
       pointer-events: none;
-      z-index: 2;
+      z-index: 1;
+    }
+    .liquid-glass::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(120% 80% at 50% -20%, rgba(255,255,255,0.18), transparent 60%);
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    /* Interactive button press effect */
-    .ios-touch-feedback {
-      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .ios-touch-feedback:active {
-      transform: scale(0.96) translateY(0.5px);
-      filter: brightness(0.9);
+    .liquid-glass-interactive { cursor: pointer; }
+    .liquid-glass-interactive:active {
+      transform: scale(0.97);
+      box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0px rgba(255, 255, 255, 0.3);
     }
 
-    /* Floating Capsule Unified Dock */
-    .dock-container {
+    /* Compact card variant (slightly smaller radius) */
+    .liquid-glass-sm { border-radius: 24px; }
+
+    /* ───────────────────────────────────────────────
+       PREMIUM NAVBAR (capsule + circle button)
+       ─────────────────────────────────────────────── */
+    .navbar-container {
       position: fixed;
-      bottom: calc(16px + var(--safe-bottom));
+      bottom: calc(18px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 24px);
-      max-width: 400px;
-      z-index: 45;
+      max-width: 420px;
+      display: flex;
+      gap: 10px;
+      z-index: 40;
+      align-items: center;
+      justify-content: center;
     }
 
-    .dock-glass {
+    .navbar-capsule {
+      flex: 1;
       height: 68px;
-      background: rgba(20, 22, 33, 0.75);
-      backdrop-filter: blur(35px) saturate(220%) brightness(1.1);
-      -webkit-backdrop-filter: blur(35px) saturate(220%) brightness(1.1);
-      border: 1px solid rgba(255, 255, 255, 0.11);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(50px) saturate(240%) brightness(1.18);
+      -webkit-backdrop-filter: blur(50px) saturate(240%) brightness(1.18);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 34px;
-      box-shadow: 
-        0 15px 40px rgba(0, 0, 0, 0.65),
-        inset 0 1.5px 0.5px rgba(255, 255, 255, 0.16),
-        inset 0 -1.5px 1px rgba(0, 0, 0, 0.4);
+      box-shadow:
+        0 22px 50px rgba(0, 0, 0, 0.65),
+        inset 0 1.5px 0.5px rgba(255, 255, 255, 0.3),
+        inset 0 -1.5px 0.5px rgba(0, 0, 0, 0.35);
       display: flex;
-      justify-content: space-between;
       align-items: center;
       padding: 0 6px;
       position: relative;
       overflow: hidden;
     }
-
-    .dock-liquid-pill {
-      position: absolute;
-      height: 54px;
-      width: calc(33.333% - 8px);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0px rgba(255, 255, 255, 0.08);
-      border-radius: 27px;
-      z-index: 1;
-      left: 6px;
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    .navbar-capsule::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.12) 0%,
+        rgba(255,255,255,0)    35%,
+        rgba(0,0,0,0.10)       100%);
+      pointer-events: none;
     }
 
-    .dock-item {
+    .navbar-pill-bg {
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      width: calc(50% - 8px);
+      left: 6px;
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 4px 12px rgba(10, 132, 255, 0.15);
+      border-radius: 26px;
+      z-index: 1;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .navbar-pill-bg.dashboard  { transform: translateX(0); }
+    .navbar-pill-bg.leaderboard { transform: translateX(100%); }
+
+    .navbar-circle-btn {
+      width: 68px;
+      height: 68px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+      backdrop-filter: blur(50px) saturate(240%) brightness(1.18);
+      -webkit-backdrop-filter: blur(50px) saturate(240%) brightness(1.18);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      box-shadow:
+        0 22px 50px rgba(0, 0, 0, 0.65),
+        inset 0 1.5px 0.5px rgba(255, 255, 255, 0.35),
+        inset 0 -1.5px 0.5px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
+      flex-shrink: 0;
+    }
+    .navbar-circle-btn:active { transform: scale(0.92); }
+
+    .nav-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex: 1;
-      height: 100%;
       color: rgba(255, 255, 255, 0.45);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: color 0.25s ease;
       z-index: 2;
-      cursor: pointer;
+    }
+    .nav-item.active {
+      color: #fff;
+    }
+    .nav-item svg {
+      width: 26px;
+      height: 26px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .nav-item.active svg {
+      transform: translateY(-1px) scale(1.12);
+    }
+    .nav-item .label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-top: 3px;
+      text-transform: uppercase;
     }
 
-    .dock-item.active {
-      color: #FFFFFF;
+    /* ───────────────────────────────────────────────
+       3D ICONS — premium realistic style
+       ─────────────────────────────────────────────── */
+    .icon-3d {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        inset 0 -1px 0 rgba(0,0,0,0.25),
+        0 4px 10px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    /* ───────────────────────────────────────────────
+       TAB ANIMATION
+       ─────────────────────────────────────────────── */
+    .tab-content {
+      animation: fadeInSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeInSlideUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+
+    /* ───────────────────────────────────────────────
+       BUTTONS
+       ─────────────────────────────────────────────── */
+    .btn-blue {
+      background: linear-gradient(135deg, #0A84FF 0%, #0050C8 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow:
+        0 10px 24px rgba(10, 132, 255, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      color: #fff;
       font-weight: 700;
     }
+    .btn-blue:active { transform: scale(0.96); }
 
-    .dock-item.active svg {
-      transform: scale(1.12);
-      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-      color: #007AFF;
-    }
-
-    .dock-item svg {
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
-    }
-
-    /* Beautiful fluid animations */
-    .tab-content {
-      animation: iosEntry 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    @keyframes iosEntry {
-      from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.99);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    /* Fluid Buttons */
-    .ios-btn-blue {
-      background: linear-gradient(180deg, #3395FF 0%, #007AFF 100%);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 
-        0 8px 20px rgba(0, 122, 255, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    }
-
-    .ios-btn-glass {
+    .btn-glass {
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+      color: #fff;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-glass:active { transform: scale(0.96); background: rgba(255,255,255,0.08); }
+
+    .btn-disabled {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.25);
+      cursor: not-allowed;
     }
 
-    /* Modal / Bottom Sheet */
-    .ios-bottom-sheet {
+    /* ───────────────────────────────────────────────
+       BOTTOM SHEET
+       ─────────────────────────────────────────────── */
+    .bottom-sheet {
       position: fixed;
       bottom: 0;
       left: 50%;
       transform: translate(-50%, 100%);
       width: 100%;
       max-width: 420px;
-      background: rgba(14, 16, 26, 0.94);
-      backdrop-filter: blur(40px) saturate(220%);
-      -webkit-backdrop-filter: blur(40px) saturate(220%);
-      border-top: 1px solid rgba(255, 255, 255, 0.13);
-      border-top-left-radius: 32px;
-      border-top-right-radius: 32px;
+      background: rgba(15, 15, 22, 0.78);
+      backdrop-filter: blur(60px) saturate(220%);
+      -webkit-backdrop-filter: blur(60px) saturate(220%);
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
+      border-top-left-radius: 36px;
+      border-top-right-radius: 36px;
       z-index: 50;
       transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-      padding-bottom: calc(20px + var(--safe-bottom));
+      padding-bottom: calc(28px + var(--safe-bottom));
+      box-shadow: 0 -20px 50px rgba(0,0,0,0.5);
     }
-    .ios-bottom-sheet.open {
-      transform: translate(-50%, 0);
-    }
+    .bottom-sheet.open { transform: translate(-50%, 0); }
 
-    .ios-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(8px);
-      z-index: 48;
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 45;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.35s ease;
+      transition: opacity 0.3s ease;
     }
-    .ios-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
+
     .spinner {
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      width: 18px;
-      height: 18px;
+      border: 2px solid rgba(255,255,255,0.18);
+      width: 16px; height: 16px;
       border-radius: 50%;
-      border-left-color: #ffffff;
-      animation: spin 0.8s linear infinite;
+      border-left-color: #fff;
+      animation: spin 0.7s linear infinite;
     }
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
     }
+
+    /* ───────────────────────────────────────────────
+       GIFT CARD ICON CONTAINER
+       ─────────────────────────────────────────────── */
+    .gift-icon-wrap {
+      width: 100%;
+      height: 130px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    }
+    .gift-icon-wrap::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.35), transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ───────────────────────────────────────────────
+       PROTECTED CONTENT (Canva Pro)
+       ─────────────────────────────────────────────── */
+    .protected-text {
+      -webkit-user-select: none;
+         -moz-user-select: none;
+          -ms-user-select: none;
+              user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: default;
+      pointer-events: auto;
+    }
+    /* iframe ga o'xshash himoya qoplama */
+    .protected-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: transparent;
+      cursor: not-allowed;
+    }
+
+    /* ───────────────────────────────────────────────
+       AVATAR
+       ─────────────────────────────────────────────── */
+    .avatar-3d {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0A84FF 0%, #BF5AF2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      box-shadow:
+        inset 0 1.5px 0 rgba(255,255,255,0.4),
+        inset 0 -1.5px 0 rgba(0,0,0,0.25),
+        0 6px 14px rgba(10, 132, 255, 0.35);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    /* Loading screen pulse */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 40px rgba(10,132,255,0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
+      50%      { box-shadow: 0 0 70px rgba(10,132,255,0.6), inset 0 1px 0 rgba(255,255,255,0.4); }
+    }
+    .pulse-glow { animation: pulseGlow 2.5s ease-in-out infinite; }
+
+    /* Toast */
+    .toast-item {
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Rank badges */
+    .rank-gold   { background: linear-gradient(135deg, #FFD700, #B8860B); }
+    .rank-silver { background: linear-gradient(135deg, #E5E5EA, #8E8E93); }
+    .rank-bronze { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+
   </style>
 </head>
-<body class="h-full text-white overflow-y-auto no-scrollbar">
 
-  <!-- ═══════════════════════════════════════
-       1-EKRAN: YUKLANISH (LOADING SCREEN)
-       ═══════════════════════════════════════ -->
-  <div id="screen-loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#05060A]">
-    <div class="flex flex-col items-center space-y-6">
-      <div class="w-20 h-20 rounded-[24px] bg-gradient-to-tr from-iosBlue to-iosIndigo flex items-center justify-center shadow-2xl shadow-iosBlue/25 border border-white/10 relative overflow-hidden">
-        <div class="absolute inset-0 bg-white/5"></div>
-        <span class="text-3xl font-black tracking-wider text-white z-10">H</span>
+<body class="h-full overflow-y-auto no-scrollbar">
+
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 1: LOADING
+       ═══════════════════════════════════════════════ -->
+  <div id="screen-loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center">
+    <div class="flex flex-col items-center space-y-7">
+      <div class="w-24 h-24 rounded-[28px] flex items-center justify-center pulse-glow"
+           style="background: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 50%, #BF5AF2 100%);
+                  border: 1px solid rgba(255,255,255,0.25);">
+        <span class="text-4xl font-black text-white tracking-tight"
+              style="text-shadow: 0 2px 8px rgba(0,0,0,0.4);">H</span>
       </div>
-      <div class="text-center space-y-1">
-        <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Hammaga Yetadi</h1>
-        <p class="text-[9px] text-white/30 tracking-widest uppercase font-bold">iOS 26 Specular Liquid</p>
+      <div class="text-center space-y-2">
+        <h1 class="text-[22px] font-extrabold tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
+          Hammaga Yetadi
+        </h1>
+        <p class="text-[10px] text-white/35 tracking-[0.2em] uppercase font-bold">
+          iOS 26 · Liquid Glass
+        </p>
       </div>
+      <div class="spinner mt-2"></div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       2-EKRAN: KANALGA OBUNA OYNASI (SUBSCRIPTION GATE)
-       ═══════════════════════════════════════ -->
-  <div id="screen-subscription" class="hidden fixed inset-0 z-40 flex items-center justify-center p-5 bg-[#05060A]/95 backdrop-blur-2xl">
-    <div class="ios-glass w-full max-w-sm p-6 flex flex-col items-center text-center space-y-5">
-      <div class="w-16 h-16 rounded-2xl bg-iosBlue/10 border border-iosBlue/20 flex items-center justify-center text-3xl shadow-inner">
-        📢
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 2: SUBSCRIPTION GATE
+       ═══════════════════════════════════════════════ -->
+  <div id="screen-subscription" class="hidden fixed inset-0 z-40 flex items-center justify-center p-5">
+    <div class="liquid-glass w-full max-w-sm p-7 flex flex-col items-center text-center space-y-6">
+      <div class="icon-3d" style="background: linear-gradient(135deg, #0A84FF, #5E5CE6); width: 76px; height: 76px; border-radius: 22px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M3 11l18-8v18l-18-8z" fill="white" fill-opacity="0.95"/>
+          <path d="M7 13v3a3 3 0 003 3h4a3 3 0 003-3v-3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
       </div>
-      <div class="space-y-1.5">
-        <h2 class="text-lg font-black text-white">Kanalga obuna bo'ling</h2>
-        <p class="text-xs text-white/45 leading-relaxed px-2">
-          Ilovadan foydalanish va sovg'alarni olish uchun rasmiy kanalimizga a'zo bo'lishingiz shart.
+      <div class="space-y-2 z-10">
+        <h2 class="text-[22px] font-extrabold text-white tracking-tight">Kanalga obuna bo'ling</h2>
+        <p class="text-[13px] text-white/55 leading-relaxed px-2">
+          Ilovadan foydalanish va sovg'alarga ega bo'lish uchun rasmiy kanalimizga a'zo bo'lishingiz kerak.
         </p>
       </div>
-      <div class="w-full space-y-2.5">
-        <button id="btn-join-channel" class="ios-btn-blue ios-touch-feedback w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2">
-          <span>📢 Kanalga a'zo bo'lish</span>
+      <div class="w-full space-y-3 z-10">
+        <button id="btn-join-channel" class="btn-blue w-full py-4 rounded-2xl text-sm flex items-center justify-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M3 11l18-8v18l-18-8z" stroke-linejoin="round"/>
+          </svg>
+          <span>Kanalga obuna bo'lish</span>
         </button>
-        <button id="btn-verify" class="ios-btn-glass ios-touch-feedback w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2">
-          <span id="btn-verify-text">✓ A'zolikni tasdiqlash</span>
+        <button id="btn-verify" class="btn-glass w-full py-4 rounded-2xl text-sm flex items-center justify-center gap-2">
+          <span id="btn-verify-text">✓ Obunani tasdiqlash</span>
           <div id="btn-verify-spinner" class="spinner hidden"></div>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       3-EKRAN: XATOLIK / ULANISH YO'QLIGI (ERROR SCREEN)
-       ═══════════════════════════════════════ -->
-  <div id="screen-error" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5 bg-[#05060A]/95 backdrop-blur-2xl">
-    <div class="ios-glass w-full max-w-sm p-6 flex flex-col items-center text-center space-y-5">
-      <div class="w-16 h-16 rounded-2xl bg-iosRed/10 border border-iosRed/20 flex items-center justify-center text-3xl shadow-inner text-iosRed">
-        ⚠️
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 3: ERROR
+       ═══════════════════════════════════════════════ -->
+  <div id="screen-error" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5">
+    <div class="liquid-glass w-full max-w-sm p-7 flex flex-col items-center text-center space-y-6">
+      <div class="icon-3d" style="background: linear-gradient(135deg, #FF453A, #BF5AF2); width: 76px; height: 76px; border-radius: 22px;">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <path d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
-      <div class="space-y-1.5">
-        <h2 class="text-lg font-black text-white">Ulanish xatosi</h2>
-        <p id="error-message-text" class="text-xs text-white/45 leading-relaxed">
-          Server bilan ulanish amalga oshmadi. Internet aloqasini tekshirib, qayta urinib ko'ring.
+      <div class="space-y-2 z-10">
+        <h2 class="text-[22px] font-extrabold text-white tracking-tight">Ulanishda xatolik</h2>
+        <p id="error-message-text" class="text-[13px] text-white/55 leading-relaxed">
+          Server bilan aloqa o'rnatib bo'lmadi. Iltimos, internetingizni tekshiring.
         </p>
       </div>
-      <button onclick="init()" class="ios-btn-blue ios-touch-feedback w-full py-3.5 rounded-xl font-bold text-xs text-white">
-        🔄 Qayta ulanish
+      <button onclick="init()" class="btn-blue w-full py-4 rounded-2xl text-sm flex items-center justify-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M4 4v6h6M20 20v-6h-6M20 8A8 8 0 006 6M4 16a8 8 0 0014 2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Qayta urinish</span>
       </button>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       MAIN APP CONTAINER
-       ═══════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════
+       MAIN APP
+       ═══════════════════════════════════════════════ -->
   <div id="screen-main" class="hidden">
-    <main class="max-w-md mx-auto px-4 space-y-5">
-      
-      <!-- 👤 TAB 1: DASHBOARD (ASOSIY OYNA) -->
-      <div id="tab-dashboard" class="tab-content space-y-4">
-        <!-- Profile Header -->
-        <div class="flex items-center justify-between p-1">
+    <main class="max-w-md mx-auto px-4">
+
+      <!-- 🏠 TAB 1: DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content space-y-5">
+
+        <!-- Profile row -->
+        <div class="flex items-center justify-between pt-1">
           <div class="flex items-center gap-3">
-            <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-iosBlue to-iosIndigo flex items-center justify-center font-extrabold text-sm border border-white/20 shadow-md">
-              H
-            </div>
+            <div id="user-avatar" class="avatar-3d">H</div>
             <div class="flex flex-col">
-              <span id="user-name" class="font-bold text-sm leading-tight text-white/90">Foydalanuvchi</span>
-              <span id="user-username" class="text-[11px] text-white/40">@username</span>
+              <span id="user-name" class="font-bold text-[15px] leading-tight">Foydalanuvchi</span>
+              <span id="user-username" class="text-[12px] text-white/40 mt-0.5">@username</span>
             </div>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-[9px] font-bold bg-iosGreen/10 border border-iosGreen/20 text-iosGreen">
-            ✓ Faol A'zo
+          <span class="px-3.5 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-1.5"
+                style="background: rgba(48, 209, 88, 0.12); border: 1px solid rgba(48, 209, 88, 0.3); color: #30D158;">
+            <span class="w-1.5 h-1.5 rounded-full bg-iosGreen"></span>
+            Faol A'zo
           </span>
         </div>
 
-        <!-- Specular Glass Balance Card -->
-        <div class="ios-glass p-5 flex flex-col items-center justify-center relative">
-          <!-- Dynamic backdrop gradient reflection -->
-          <div class="absolute -top-10 -right-10 w-24 h-24 bg-iosBlue/15 rounded-full blur-2xl"></div>
-          
-          <span class="text-[9px] font-black tracking-widest text-white/30 uppercase z-10">Sizning balansingiz</span>
-          <div class="flex items-baseline mt-1.5 z-10">
-            <span id="balance-points" class="text-4xl font-black tracking-tight bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">0</span>
-            <span class="text-xs font-extrabold text-white/50 ml-1.5">ball</span>
+        <!-- Balance card -->
+        <div class="liquid-glass p-6">
+          <div class="text-center z-10">
+            <span class="text-[10px] font-extrabold tracking-[0.2em] text-white/35 uppercase">Sizning balansingiz</span>
+            <div class="flex items-baseline justify-center mt-1.5 z-10">
+              <span id="balance-points" class="text-[56px] font-black tracking-tight leading-none bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent"
+                    style="text-shadow: 0 2px 12px rgba(255,255,255,0.15);">0</span>
+              <span class="text-[15px] font-bold text-white/45 ml-2">ball</span>
+            </div>
           </div>
-
-          <!-- Mini Stats Horizontal Row -->
-          <div class="grid grid-cols-2 w-full mt-5 pt-3 border-t border-white/5 text-center z-10">
-            <div class="border-r border-white/5">
-              <span class="text-[9px] font-bold uppercase tracking-wider text-white/30">Takliflar</span>
-              <p id="stat-referrals" class="text-base font-extrabold mt-0.5 text-white">0</p>
+          <div class="grid grid-cols-2 w-full mt-6 pt-5 z-10 text-center" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="border-right: 1px solid rgba(255,255,255,0.06);">
+              <span class="text-[9.5px] font-bold uppercase tracking-wider text-white/40">Takliflar</span>
+              <p id="stat-referrals" class="text-[20px] font-extrabold mt-1 text-white">0</p>
             </div>
             <div>
-              <span class="text-[9px] font-bold uppercase tracking-wider text-white/30">Reyting</span>
-              <p id="stat-rank" class="text-base font-extrabold mt-0.5 text-white">-</p>
+              <span class="text-[9.5px] font-bold uppercase tracking-wider text-white/40">Reyting</span>
+              <p id="stat-rank" class="text-[20px] font-extrabold mt-1 text-white">-</p>
             </div>
           </div>
         </div>
 
-        <!-- Referral Link Capsule -->
-        <div class="ios-glass p-4.5 space-y-3.5">
-          <div class="space-y-1 z-10">
-            <h3 class="font-bold text-xs text-white/90">Do'stlarni taklif qiling</h3>
-            <p class="text-[11px] text-white/40 leading-relaxed">
-              Do'stingiz taklif havolangiz orqali qo'shilib, kanalga a'zo bo'lsa sizga <b class="text-iosGreen">+50 ball</b>, unga esa <b class="text-iosBlue">+10 ball</b> beriladi.
+        <!-- Referral card -->
+        <div class="liquid-glass p-5 space-y-4">
+          <div class="space-y-1.5 z-10">
+            <div class="flex items-center gap-2">
+              <div class="icon-3d" style="background: linear-gradient(135deg, #FF9F0A, #FF375F); width: 32px; height: 32px; border-radius: 9px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="font-bold text-[15px] text-white">Do'stlarni taklif qiling</h3>
+            </div>
+            <p class="text-[12.5px] text-white/55 leading-relaxed pl-10">
+              Havolangiz orqali kirib, kanalga obuna bo'lgan har bir do'st uchun <b class="text-iosOrange">+50 ball</b>. Ularga <b class="text-iosGreen">+10 ball</b>.
             </p>
           </div>
-
-          <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[10px] font-mono select-all overflow-hidden text-ellipsis whitespace-nowrap text-white/50 z-10">
-            <span id="ref-link-text" class="overflow-hidden text-ellipsis mr-2">Yuklanmoqda...</span>
+          <div class="flex items-center justify-between p-3.5 rounded-2xl z-10 select-all overflow-hidden"
+               style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06);">
+            <span id="ref-link-text" class="overflow-hidden text-ellipsis mr-2 text-[11.5px] font-mono text-white/65">Yuklanmoqda...</span>
           </div>
-
-          <div class="grid grid-cols-2 gap-2.5 z-10">
-            <button id="btn-copy" class="ios-btn-glass ios-touch-feedback py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 text-white/90">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5A3.375 3.375 0 006.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-1.5a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 00-9-9z"></path>
+          <div class="grid grid-cols-2 gap-3 z-10">
+            <button id="btn-copy" class="btn-glass py-3.5 rounded-2xl text-[12.5px] flex items-center justify-center gap-1.5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
               </svg>
               <span>Nusxalash</span>
             </button>
-            <button id="btn-share" class="ios-btn-blue ios-touch-feedback py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 text-white">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l5.577-3.136m-5.577 3.136l5.577 3.136m0 0a2.25 2.25 0 102.186 1.559 2.25 2.25 0 00-2.186-1.559zm0-10.336a2.25 2.25 0 102.186 1.559 2.25 2.25 0 00-2.186-1.559z"></path>
+            <button id="btn-share" class="btn-blue py-3.5 rounded-2xl text-[12.5px] flex items-center justify-center gap-1.5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span>Ulashish</span>
             </button>
           </div>
         </div>
 
-        <!-- Information Steps -->
-        <div class="ios-glass p-4.5 space-y-3.5">
-          <h3 class="font-bold text-xs text-white/90 z-10">Tizim qanday ishlaydi?</h3>
-          <div class="space-y-3 z-10">
+        <!-- How it works -->
+        <div class="liquid-glass p-5 space-y-4">
+          <div class="flex items-center gap-2 z-10">
+            <div class="icon-3d" style="background: linear-gradient(135deg, #0A84FF, #5E5CE6); width: 32px; height: 32px; border-radius: 9px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[15px] text-white">Tizim qanday ishlaydi?</h3>
+          </div>
+          <div class="space-y-3.5 z-10 pl-1">
             <div class="flex items-start gap-3">
-              <div class="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold shrink-0 text-iosBlue">1</div>
-              <p class="text-[11px] text-white/45 leading-normal">Taklif havolangizni do'stingizga yuboring.</p>
+              <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 z-10"
+                   style="background: linear-gradient(135deg, rgba(10,132,255,0.25), rgba(10,132,255,0.08)); border: 1px solid rgba(10,132,255,0.35); color: #0A84FF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);">1</div>
+              <p class="text-[12.5px] text-white/60 leading-relaxed pt-1">Taklif havolangizni do'stingizga yuboring.</p>
             </div>
             <div class="flex items-start gap-3">
-              <div class="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold shrink-0 text-iosBlue">2</div>
-              <p class="text-[11px] text-white/45 leading-normal">Do'stingiz havoladan kirib kanalga a'zo bo'lsin.</p>
+              <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 z-10"
+                   style="background: linear-gradient(135deg, rgba(10,132,255,0.25), rgba(10,132,255,0.08)); border: 1px solid rgba(10,132,255,0.35); color: #0A84FF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);">2</div>
+              <p class="text-[12.5px] text-white/60 leading-relaxed pt-1">Do'stingiz havoladan kirib, kanalimizga obuna bo'lsin.</p>
             </div>
             <div class="flex items-start gap-3">
-              <div class="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold shrink-0 text-iosBlue">3</div>
-              <p class="text-[11px] text-white/45 leading-normal">Ulanish tasdiqlangach, hisobingizga ball yoziladi.</p>
+              <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 z-10"
+                   style="background: linear-gradient(135deg, rgba(10,132,255,0.25), rgba(10,132,255,0.08)); border: 1px solid rgba(10,132,255,0.35); color: #0A84FF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);">3</div>
+              <p class="text-[12.5px] text-white/60 leading-relaxed pt-1">Ballar avtomatik ravishda hisobingizga qo'shiladi.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 🏆 TAB 2: LEADERBOARD (REYTING OYNASI) -->
-      <div id="tab-leaderboard" class="tab-content hidden space-y-4">
-        <div class="text-center py-1">
-          <h2 class="text-lg font-black text-white">Top Faollar 🏆</h2>
-          <p class="text-xs text-white/40 mt-0.5">Eng ko'p do'st taklif qilgan faollar ro'yxati</p>
+      <!-- 🏆 TAB 2: LEADERBOARD -->
+      <div id="tab-leaderboard" class="tab-content hidden space-y-5">
+        <div class="text-center pt-2 pb-1">
+          <h2 class="text-[22px] font-extrabold text-white tracking-tight">Top Taklifchilar</h2>
+          <p class="text-[12px] text-white/45 mt-1.5">Eng faol ishtirokchilar reytingi</p>
         </div>
-
-        <div class="ios-glass p-3">
+        <div class="liquid-glass p-4">
           <div id="leaderboard-list" class="space-y-2 z-10">
-            <div class="text-center py-8 text-xs text-white/30">Yuklanmoqda...</div>
+            <div class="text-center py-10 text-[12px] text-white/30">Yuklanmoqda...</div>
           </div>
         </div>
       </div>
 
-      <!-- 🎁 TAB 3: SHOP (DO'KON OYNASI) -->
-      <div id="tab-shop" class="tab-content hidden space-y-4">
-        <div class="text-center py-1">
-          <h2 class="text-lg font-black text-white">Sovg'alar Do'koni 🎁</h2>
-          <p class="text-xs text-white/40 mt-0.5">Ballarni ajoyib mukofotlarga almashtiring</p>
+      <!-- 🎁 TAB 3: SHOP / GIFTS -->
+      <div id="tab-shop" class="tab-content hidden space-y-5">
+        <div class="text-center pt-2 pb-1">
+          <h2 class="text-[22px] font-extrabold text-white tracking-tight">Sovg'alar Do'koni</h2>
+          <p class="text-[12px] text-white/45 mt-1.5">To'plagan ballaringizni haqiqiy sovg'alarga almashtiring</p>
         </div>
+        <div id="gifts-list" class="space-y-4">
+          <div class="text-center py-10 text-[12px] text-white/30">Yuklanmoqda...</div>
+        </div>
+      </div>
 
-        <div id="gifts-list" class="grid grid-cols-1 gap-3.5">
-          <div class="text-center py-8 text-xs text-white/30">Yuklanmoqda...</div>
+      <!-- 📦 TAB 4: MY GIFTS (Canva Pro ko'rish) -->
+      <div id="tab-mygifts" class="tab-content hidden space-y-5">
+        <div class="text-center pt-2 pb-1">
+          <h2 class="text-[22px] font-extrabold text-white tracking-tight">Sovg'alarim</h2>
+          <p class="text-[12px] text-white/45 mt-1.5">Olib olgan sovg'alaringiz shu yerda</p>
+        </div>
+        <div id="mygifts-list" class="space-y-4">
+          <div class="text-center py-10 text-[12px] text-white/30">Yuklanmoqda...</div>
         </div>
       </div>
 
     </main>
 
-    <!-- ═══════════════════════════════════════
-         SPECULAR UNIFIED CAPSULE DOCK
-         ═══════════════════════════════════════ -->
-    <div class="dock-container">
-      <div class="dock-glass">
-        <!-- Liquid Pill Background -->
-        <div id="active-pill" class="dock-liquid-pill"></div>
+    <!-- ═══════════════════════════════════════════════
+         PREMIUM NAVBAR (4 tab)
+         ═══════════════════════════════════════════════ -->
+    <div class="navbar-container">
+      <div class="navbar-capsule">
+        <div id="navbar-pill" class="navbar-pill-bg dashboard"></div>
 
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="dock-item active">
-          <svg class="w-5.5 h-5.5 mb-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"></path>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12l9-9 9 9v9a2 2 0 01-2 2h-3v-7H8v7H5a2 2 0 01-2-2v-9z"/>
           </svg>
-          <span class="text-[9px] font-bold tracking-wide">Asosiy</span>
+          <span class="label">Asosiy</span>
         </button>
 
-        <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="dock-item">
-          <svg class="w-5.5 h-5.5 mb-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-2.25c-.622 0-1.125.504-1.125 1.125V18.75m9 0t-9 0M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+        <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/>
+            <path d="M17 4h3v2a3 3 0 01-3 3M7 4H4v2a3 3 0 003 3"/>
           </svg>
-          <span class="text-[9px] font-bold tracking-wide">Reyting</span>
-        </button>
-
-        <button onclick="switchTab('shop')" id="nav-shop" class="dock-item">
-          <svg class="w-5.5 h-5.5 mb-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"></path>
-          </svg>
-          <span class="text-[9px] font-bold tracking-wide">Do'kon</span>
+          <span class="label">Reyting</span>
         </button>
       </div>
+
+      <button onclick="switchTab('shop')" id="nav-shop" class="navbar-circle-btn" style="background: linear-gradient(135deg, rgba(255,159,10,0.18), rgba(255,55,95,0.10));">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="width: 30px; height: 30px;">
+          <path d="M20 12v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8M2 7h20l-2 5H4L2 7zM12 22V7M12 7H8.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h3.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+        </svg>
+      </button>
+
+      <button onclick="switchTab('mygifts')" id="nav-mygifts" class="navbar-circle-btn" style="background: linear-gradient(135deg, rgba(10,132,255,0.18), rgba(94,92,230,0.10)); width: 56px; height: 56px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+          <path d="M21 8a2 2 0 00-2-2H5a2 2 0 00-2 2m18 0v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8m18 0H3m6 7h6"/>
+        </svg>
+      </button>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════
        REDEMPTION CONFIRMATION BOTTOM SHEET
-       ═══════════════════════════════════════ -->
-  <div id="overlay" class="ios-overlay" onclick="closeRedeemModal()"></div>
-  <div id="redeem-modal" class="ios-bottom-sheet">
-    <div class="w-10 h-1 bg-white/20 rounded-full mx-auto my-3"></div>
-    
-    <div class="px-5 pb-5 space-y-5 text-center">
-      <div class="w-14 h-14 rounded-2xl bg-iosBlue/10 border border-iosBlue/20 flex items-center justify-center text-3xl mx-auto shadow-inner">
-        🎁
+       ═══════════════════════════════════════════════ -->
+  <div id="overlay" class="overlay" onclick="closeRedeemModal()"></div>
+  <div id="redeem-modal" class="bottom-sheet">
+    <div class="w-12 h-1 bg-white/15 rounded-full mx-auto my-3.5"></div>
+    <div class="px-6 pb-6 space-y-6 text-center">
+      <div id="modal-icon-wrap" class="icon-3d mx-auto" style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #0A84FF, #BF5AF2);">
+        <svg id="modal-icon" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 12v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8M2 7h20l-2 5H4L2 7zM12 22V7M12 7H8.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h3.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+        </svg>
       </div>
-      
-      <div class="space-y-1">
-        <h3 class="text-lg font-black text-white">Almashtirishni tasdiqlaysizmi?</h3>
-        <p class="text-[11px] text-white/45 leading-relaxed px-4">
-          Sizning hisobingizdan <b id="modal-gift-points" class="text-iosBlue">0</b> ball chegiriladi va sovg'ani qabul qilish so'rovi adminga yuboriladi.
+      <div class="space-y-1.5">
+        <h3 class="text-[20px] font-extrabold text-white tracking-tight">Almashtirishni tasdiqlaysizmi?</h3>
+        <p class="text-[12.5px] text-white/55 leading-relaxed px-3">
+          Hisobingizdan <b id="modal-gift-points" class="text-iosBlue">0</b> ball ayriladi.
         </p>
       </div>
-
-      <div class="p-4 rounded-xl bg-white/[0.04] border border-white/[0.06] text-left relative overflow-hidden">
-        <div class="absolute inset-0 bg-white/[0.01]"></div>
-        <span class="text-[8px] uppercase font-black tracking-wider text-white/30">Tanlangan sovg'a</span>
-        <h4 id="modal-gift-name" class="font-extrabold text-sm mt-0.5 text-white">-</h4>
-        <p id="modal-gift-desc" class="text-[10px] text-white/40 mt-1 leading-relaxed">-</p>
+      <div class="p-4.5 rounded-2xl text-left z-10" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);">
+        <span class="text-[9.5px] uppercase font-extrabold tracking-wider text-white/40">Tanlangan sovg'a</span>
+        <h4 id="modal-gift-name" class="font-bold text-[15px] mt-1 text-white">-</h4>
+        <p id="modal-gift-desc" class="text-[12px] text-white/45 mt-1 leading-relaxed">-</p>
       </div>
-
       <div class="grid grid-cols-2 gap-3 pt-1">
-        <button onclick="closeRedeemModal()" class="ios-btn-glass ios-touch-feedback py-3 rounded-xl font-bold text-xs text-white">
-          Bekor qilish
-        </button>
-        <button id="btn-confirm-redeem" onclick="confirmRedemption()" class="ios-btn-blue ios-touch-feedback py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-2">
+        <button onclick="closeRedeemModal()" class="btn-glass py-4 rounded-2xl text-[13px]">Bekor qilish</button>
+        <button id="btn-confirm-redeem" onclick="confirmRedemption()" class="btn-blue py-4 rounded-2xl text-[13px] flex items-center justify-center gap-2">
           <span id="btn-confirm-text">Tasdiqlash</span>
           <div id="btn-confirm-spinner" class="spinner hidden"></div>
         </button>
@@ -515,104 +753,147 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATIONS -->
-  <div id="toast-container" class="fixed left-1/2 bottom-24 -translate-x-1/2 z-50 w-[90%] max-w-xs pointer-events-none space-y-2"></div>
+  <!-- ═══════════════════════════════════════════════
+       CANVA PRO VIEWER (Protected)
+       ═══════════════════════════════════════════════ -->
+  <div id="overlay-protected" class="overlay" onclick="closeProtectedViewer()"></div>
+  <div id="protected-viewer" class="bottom-sheet">
+    <div class="w-12 h-1 bg-white/15 rounded-full mx-auto my-3.5"></div>
+    <div class="px-6 pb-6 space-y-5">
 
-  <!-- ═══════════════════════════════════════
+      <!-- Header -->
+      <div class="text-center space-y-3">
+        <div class="icon-3d mx-auto" style="width: 76px; height: 76px; border-radius: 22px; background: linear-gradient(135deg, #7B61FF, #5E5CE6);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L9.5 8.5 2 9.5l5.5 5L6 22l6-3.5L18 22l-1.5-7.5 5.5-5-7.5-1z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="protected-gift-name" class="text-[20px] font-extrabold text-white tracking-tight">Canva Pro</h3>
+          <p class="text-[12px] text-white/50 mt-1">Havolani himoya qilish faollashtirilgan</p>
+        </div>
+      </div>
+
+      <!-- Protected content box -->
+      <div class="relative rounded-2xl p-5 space-y-3"
+           style="background: rgba(123, 97, 255, 0.08); border: 1px solid rgba(123, 97, 255, 0.25);">
+        <div class="flex items-center gap-2 text-[11px] font-bold text-white/55 uppercase tracking-wider">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          <span>Maxfiy havola</span>
+        </div>
+
+        <!-- Protected link display -->
+        <div id="protected-content-box" class="protected-text relative p-4 rounded-xl font-mono text-[13px] break-all leading-relaxed"
+             style="background: rgba(0,0,0,0.4); color: rgba(255,255,255,0.85); min-height: 60px;"
+             oncontextmenu="return false;"
+             oncopy="return false;"
+             oncut="return false;"
+             onpaste="return false;"
+             ondragstart="return false;"
+             onselectstart="return false;">
+          Yuklanmoqda...
+          <!-- Invisible overlay to block direct copy attempts -->
+          <div class="protected-overlay"></div>
+        </div>
+
+        <!-- Meta info -->
+        <div class="flex items-center justify-between text-[11px] text-white/55">
+          <span class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-iosGreen"></span>
+            <span id="protected-remaining">Ko'rish: 5/5</span>
+          </span>
+          <span id="protected-expires">Muddati: 10:00</span>
+        </div>
+      </div>
+
+      <!-- Open button -->
+      <button id="btn-open-protected" onclick="openProtectedLink()" class="btn-blue w-full py-4 rounded-2xl text-[13px] flex items-center justify-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Brauzerda ochish</span>
+      </button>
+
+      <!-- Warning -->
+      <div class="flex items-start gap-2.5 p-3 rounded-xl"
+           style="background: rgba(255, 159, 10, 0.08); border: 1px solid rgba(255, 159, 10, 0.2);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF9F0A" stroke-width="2.5" class="shrink-0 mt-0.5">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="text-[11.5px] text-white/65 leading-relaxed">
+          <b class="text-iosOrange">Diqqat:</b> Havolani nusxalash, screen-shot yoki boshqa usulda saqlash taqiqlangan. Faqat <b>“Brauzerda ochish”</b> tugmasi orqali foydalaning.
+        </p>
+      </div>
+
+      <button onclick="closeProtectedViewer()" class="btn-glass w-full py-3.5 rounded-2xl text-[13px]">Yopish</button>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed left-1/2 bottom-28 -translate-x-1/2 z-[60] w-[92%] max-w-sm pointer-events-none space-y-2"></div>
+
+  <!-- ═══════════════════════════════════════════════
        JAVASCRIPT LOGIC
-       ═══════════════════════════════════════ -->
+       ═══════════════════════════════════════════════ -->
   <script>
-    const API_BASE = 'https://dgdgjdd.pythonanywhere.com';
+    // ─── CONFIG ───────────────────────────────────
+    const API_BASE    = 'https://dgdgjdd.pythonanywhere.com';
     const CHANNEL_URL = 'https://t.me/hammagayetadi';
     const BOT_USERNAME = 'hammagayetadi_bot';
-    const APP_NAME = 'hammagayetadi';
+    const APP_NAME    = 'hammagayetadi';
 
+    // ─── STATE ────────────────────────────────────
     const STATE = {
       user: null,
       isMember: false,
       leaderboard: [],
       gifts: [],
       selectedGift: null,
-      activeTab: 'dashboard'
+      activeTab: 'dashboard',
+      activeRedemption: null,    // { id, view_token, gift_name, gift_type }
+      protectedContent: null,    // the link/code
+      protectedCountdown: null
     };
 
+    // ─── TELEGRAM INIT ────────────────────────────
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
     tg.enableClosingConfirmation();
-    tg.setHeaderColor('#05060A');
-    tg.setBackgroundColor('#05060A');
+    tg.setHeaderColor('#000000');
+    tg.setBackgroundColor('#000000');
 
     const haptic = {
-      light:   () => { try { tg.HapticFeedback.impactOccurred('light'); } catch(e){} },
-      medium:  () => { try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){} },
-      heavy:   () => { try { tg.HapticFeedback.impactOccurred('heavy'); } catch(e){} },
+      light:   () => { try { tg.HapticFeedback.impactOccurred('light'); }   catch(e){} },
+      medium:  () => { try { tg.HapticFeedback.impactOccurred('medium'); }  catch(e){} },
+      heavy:   () => { try { tg.HapticFeedback.impactOccurred('heavy'); }   catch(e){} },
       success: () => { try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){} },
-      error:   () => { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
+      error:   () => { try { tg.HapticFeedback.notificationOccurred('error'); }   catch(e){} },
+      warning: () => { try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){} },
     };
 
-    async function init() {
-      showScreen('loading');
-      
-      const initData = tg.initData;
-      const startParam = tg.initDataUnsafe?.start_param ?? getQueryParam('startapp') ?? null;
-      
-      if (!initData) {
-        showErrorState("Telegram interfeysi topilmadi");
-        return;
-      }
-      
-      try {
-        const res = await apiCall('/api/auth', 'POST', {
-          init_data: initData,
-          referral_code: startParam
-        });
-        
-        STATE.user = res.user;
-        STATE.isMember = res.is_member;
-        
-        if (STATE.isMember) {
-          renderDashboard();
-          showScreen('main');
-          loadLeaderboard();
-          loadGifts();
-        } else {
-          showScreen('subscription');
-        }
-      } catch (err) {
-        showErrorState(err.message || "Ulanish xatosi yuz berdi");
-        showScreen('error');
-      } finally {
-        setTimeout(() => {
-          const loadingScreen = document.getElementById('screen-loading');
-          if (loadingScreen) {
-            loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.35s ease';
-            setTimeout(() => loadingScreen.classList.add('hidden'), 350);
-          }
-        }, 1000);
-      }
-    }
+    // ─── GLOBAL PROTECTION (no copy/paste/select/contextmenu on whole app) ───
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('copy',  e => { /* ruxsat beramiz faqat ref-link uchun */ });
+    document.addEventListener('cut',   e => e.preventDefault());
+    document.addEventListener('paste', e => e.preventDefault());
 
+    // ─── API ──────────────────────────────────────
     async function apiCall(endpoint, method = 'GET', body = null) {
       const url = API_BASE.replace(/\/$/, '') + endpoint;
       const options = {
         method,
         headers: { 'Content-Type': 'application/json' }
       };
-      if (body) {
-        options.body = JSON.stringify(body);
-      }
-      
+      if (body) options.body = JSON.stringify(body);
       try {
         const response = await fetch(url, options);
-        if (!response.ok) {
-          throw new Error(`Xatolik kodi: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Server xatoligi: ${response.status}`);
         const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.error || "Tizim xatoligi");
-        }
+        if (!data.success) throw new Error(data.error || "Noma'lum xatolik");
         return data;
       } catch (e) {
         console.error("API Call failed:", e);
@@ -620,31 +901,73 @@
       }
     }
 
+    // ─── INIT ─────────────────────────────────────
+    async function init() {
+      showScreen('loading');
+      const initData = tg.initData;
+      const startParam = tg.initDataUnsafe?.start_param ?? getQueryParam('startapp') ?? null;
+      if (!initData) {
+        showErrorState("Telegram orqali kirish zarur");
+        showScreen('error');
+        return;
+      }
+      try {
+        const res = await apiCall('/api/auth', 'POST', {
+          init_data: initData,
+          referral_code: startParam
+        });
+        STATE.user = res.user;
+        STATE.isMember = res.is_member;
+        if (STATE.isMember) {
+          renderDashboard();
+          showScreen('main');
+          loadLeaderboard();
+          loadGifts();
+          loadMyGifts();
+        } else {
+          showScreen('subscription');
+        }
+      } catch (err) {
+        showErrorState(err.message || "Server bilan ulanishda xatolik");
+        showScreen('error');
+      } finally {
+        setTimeout(() => {
+          const loadingScreen = document.getElementById('screen-loading');
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.4s ease';
+          setTimeout(() => loadingScreen.classList.add('hidden'), 400);
+        }, 800);
+      }
+    }
+
+    // ─── TAB SWITCH ──────────────────────────────
     function switchTab(tabId) {
       if (STATE.activeTab === tabId) return;
       haptic.light();
-      
-      // Hide Previous Tab View
-      document.getElementById(`tab-${STATE.activeTab}`).classList.add('hidden');
-      document.getElementById(`nav-${STATE.activeTab}`).classList.remove('active');
-      
-      // Show New Tab View
+
+      ['dashboard','leaderboard','shop','mygifts'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        const nav = document.getElementById(`nav-${t}`);
+        if (nav) nav.classList.remove('active');
+      });
+
       document.getElementById(`tab-${tabId}`).classList.remove('hidden');
       document.getElementById(`nav-${tabId}`).classList.add('active');
-      
-      // Fluid Dynamic Pill Slide Position
-      const pill = document.getElementById('active-pill');
-      if (tabId === 'dashboard') {
-        pill.style.left = '6px';
-      } else if (tabId === 'leaderboard') {
-        pill.style.left = 'calc(33.333% + 4px)';
-      } else if (tabId === 'shop') {
-        pill.style.left = 'calc(66.666% + 2px)';
+
+      // Pill animation
+      const pill = document.getElementById('navbar-pill');
+      pill.classList.remove('dashboard','leaderboard');
+      if (tabId === 'dashboard')       pill.classList.add('dashboard');
+      else if (tabId === 'leaderboard') pill.classList.add('leaderboard');
+      else                                pill.style.opacity = '0';
+      if (tabId === 'shop' || tabId === 'mygifts') {
+        pill.style.opacity = '0';
+      } else {
+        pill.style.opacity = '1';
       }
-      
+
       STATE.activeTab = tabId;
-      
-      // Manage Native Main Button View
+
       if (tabId === 'dashboard') {
         tg.MainButton.show();
       } else {
@@ -652,93 +975,158 @@
       }
     }
 
+    // ─── VERIFY ──────────────────────────────────
     async function verifySubscription() {
       haptic.medium();
       setButtonLoading('btn-verify', true);
-      
       try {
-        const res = await apiCall('/api/verify', 'POST', {
-          init_data: tg.initData
-        });
-        
+        const res = await apiCall('/api/verify', 'POST', { init_data: tg.initData });
         STATE.user = res.user;
         STATE.isMember = true;
-        
         haptic.success();
-        showToast("✅ Muvaffaqiyatli obuna bo'lindi!", 'success');
-        
+        showToast("✅ Muvaffaqiyatli a'zo bo'lindi!", 'success');
         setTimeout(() => {
           renderDashboard();
           showScreen('main');
           loadLeaderboard();
           loadGifts();
-        }, 800);
-        
+          loadMyGifts();
+        }, 700);
       } catch (err) {
         haptic.error();
-        showToast(err.message || "A'zolik hali aniqlanmadi", 'error');
+        showToast(err.message || "Kanalga a'zolik tasdiqlanmadi", 'error');
       } finally {
         setButtonLoading('btn-verify', false);
       }
     }
 
+    // ─── LEADERBOARD ─────────────────────────────
     async function loadLeaderboard() {
       try {
         const res = await apiCall('/api/leaderboard');
         STATE.leaderboard = res.leaderboard;
         renderLeaderboard();
-      } catch (err) {
-        console.error("Leaderboard load failed:", err);
-      }
+      } catch (err) { console.error("Failed to load leaderboard", err); }
     }
 
+    function renderLeaderboard() {
+      const container = document.getElementById('leaderboard-list');
+      container.innerHTML = '';
+      if (STATE.leaderboard.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-[12px] text-white/30">Hozircha ma'lumot yo'q</div>`;
+        return;
+      }
+      STATE.leaderboard.forEach(item => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-3 rounded-2xl z-10";
+        row.style.background = 'rgba(255,255,255,0.04)';
+        row.style.border = '1px solid rgba(255,255,255,0.05)';
+
+        let rankBadge = '';
+        if (item.rank === 1) {
+          rankBadge = `<div class="rank-gold w-9 h-9 rounded-full flex items-center justify-center font-black text-[13px] text-white shrink-0 z-10" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 8px rgba(255,215,0,0.3);">1</div>`;
+        } else if (item.rank === 2) {
+          rankBadge = `<div class="rank-silver w-9 h-9 rounded-full flex items-center justify-center font-black text-[13px] text-white shrink-0 z-10" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 8px rgba(229,229,234,0.3);">2</div>`;
+        } else if (item.rank === 3) {
+          rankBadge = `<div class="rank-bronze w-9 h-9 rounded-full flex items-center justify-center font-black text-[13px] text-white shrink-0 z-10" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 8px rgba(205,127,50,0.3);">3</div>`;
+        } else {
+          rankBadge = `<div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[12px] text-white/50 shrink-0 z-10" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">${item.rank}</div>`;
+        }
+
+        const usernameHTML = item.username ? `<span class="text-[10.5px] text-white/35 mt-0.5">${item.username}</span>` : '';
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3 z-10">
+            ${rankBadge}
+            <div class="flex flex-col">
+              <span class="font-bold text-[13.5px] text-white">${escapeHTML(item.first_name)}</span>
+              ${usernameHTML}
+            </div>
+          </div>
+          <div class="text-right z-10">
+            <span class="font-extrabold text-[15px] text-white">${formatNumber(item.points)}</span>
+            <span class="text-[10px] text-white/35 block mt-0.5">${formatNumber(item.referral_count)} do'st</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+      determineUserRank();
+    }
+
+    function determineUserRank() {
+      if (!STATE.user || STATE.leaderboard.length === 0) return;
+      let rank = "-";
+      for (let i = 0; i < STATE.leaderboard.length; i++) {
+        const item = STATE.leaderboard[i];
+        if (STATE.user.username && item.username && item.username.includes(STATE.user.username.substring(0, 3))) {
+          rank = item.rank;
+          break;
+        }
+      }
+      document.getElementById('stat-rank').textContent = rank !== "-" ? `#${rank}` : '—';
+    }
+
+    // ─── GIFTS ───────────────────────────────────
     async function loadGifts() {
       try {
         const res = await apiCall('/api/gifts');
         STATE.gifts = res.gifts;
         renderGifts();
-      } catch (err) {
-        console.error("Gifts load failed:", err);
-      }
+      } catch (err) { console.error("Failed to load gifts", err); }
     }
 
     function renderGifts() {
       const container = document.getElementById('gifts-list');
       container.innerHTML = '';
-
       if (STATE.gifts.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-xs text-white/30">Hozircha sovg'alar mavjud emas.</div>`;
+        container.innerHTML = `<div class="text-center py-10 text-[12px] text-white/30">Hozircha sovg'alar yo'q</div>`;
         return;
       }
 
       STATE.gifts.forEach(gift => {
         const hasPoints = STATE.user.points >= gift.points_cost;
         const outOfStock = gift.stock === 0;
+        const noCodes = gift.gift_type === 'canva_pro_link' && (gift.available_codes === 0);
 
         let buttonHTML = '';
-        if (outOfStock) {
-          buttonHTML = `<button class="w-full py-3 rounded-xl font-bold text-xs bg-white/5 border border-white/5 text-white/30 cursor-not-allowed" disabled>Tugagan</button>`;
+        if (outOfStock || noCodes) {
+          buttonHTML = `<button class="btn-disabled w-full py-3.5 rounded-2xl text-[12px] mt-2" disabled>${noCodes ? 'Kodlar tugagan' : 'Tugagan'}</button>`;
         } else if (hasPoints) {
-          buttonHTML = `<button onclick="openRedeemModal(${gift.id})" class="ios-btn-blue ios-touch-feedback w-full py-3 rounded-xl font-bold text-xs text-white">Sotib olish</button>`;
+          buttonHTML = `<button onclick="openRedeemModal(${gift.id})" class="btn-blue w-full py-3.5 rounded-2xl text-[12px] mt-2 flex items-center justify-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M3 12l9-9 9 9M5 10v10a2 2 0 002 2h10a2 2 0 002-2V10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Almashtirish</span>
+          </button>`;
         } else {
-          buttonHTML = `<button class="w-full py-3 rounded-xl font-bold text-xs bg-white/5 border border-white/5 text-white/30 cursor-not-allowed" disabled>Ball yetarli emas</button>`;
+          const need = gift.points_cost - STATE.user.points;
+          buttonHTML = `<button class="btn-disabled w-full py-3.5 rounded-2xl text-[12px] mt-2" disabled>Yana ${need} ball kerak</button>`;
         }
 
-        const card = document.createElement('div');
-        card.className = "ios-glass p-4.5 flex flex-col justify-between space-y-4 relative";
-        
-        const imgHTML = gift.image_url 
-          ? `<img src="${gift.image_url}" alt="${gift.name}" class="w-full h-28 object-cover rounded-xl border border-white/5 shadow-inner">`
-          : `<div class="w-full h-28 rounded-xl bg-white/[0.04] border border-white/[0.05] flex items-center justify-center text-3xl shadow-inner">🎁</div>`;
+        // Icon container — premium 3D style by gift type
+        const giftIcon = renderGiftIcon(gift);
 
+        // Canva badge
+        const canvaBadge = gift.gift_type === 'canva_pro_link'
+          ? `<span class="px-2.5 py-1 rounded-lg text-[9.5px] font-extrabold uppercase tracking-wider shrink-0"
+                    style="background: rgba(123, 97, 255, 0.18); border: 1px solid rgba(123, 97, 255, 0.4); color: #BF9CFF;">
+              🔒 Himoyalangan
+            </span>`
+          : `<span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold shrink-0"
+                    style="background: rgba(10, 132, 255, 0.15); border: 1px solid rgba(10, 132, 255, 0.3); color: #0A84FF;">
+              ${formatNumber(gift.points_cost)} ball
+            </span>`;
+
+        const card = document.createElement('div');
+        card.className = "liquid-glass p-5 space-y-4";
         card.innerHTML = `
-          ${imgHTML}
+          ${giftIcon}
           <div class="space-y-1.5 z-10">
             <div class="flex items-start justify-between gap-2">
-              <h4 class="font-extrabold text-sm text-white leading-snug">${gift.name}</h4>
-              <span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold bg-iosBlue/10 border border-iosBlue/20 text-iosBlue shrink-0">${gift.points_cost} ball</span>
+              <h4 class="font-bold text-[15px] text-white leading-snug">${escapeHTML(gift.name)}</h4>
+              ${canvaBadge}
             </div>
-            <p class="text-[11px] text-white/40 leading-relaxed">${gift.description || "Batafsil ma'lumot yo'q."}</p>
+            <p class="text-[12px] text-white/45 leading-relaxed">${escapeHTML(gift.description || "Batafsil ma'lumot yo'q.")}</p>
           </div>
           <div class="z-10">${buttonHTML}</div>
         `;
@@ -746,21 +1134,49 @@
       });
     }
 
+    function renderGiftIcon(gift) {
+      const accent = gift.accent_color || '#0A84FF';
+      // Premium 3D icon — gradient bg + 3D-feel SVG
+      if (gift.gift_type === 'canva_pro_link') {
+        return `
+          <div class="gift-icon-wrap relative" style="background: linear-gradient(135deg, #7B61FF 0%, #5E5CE6 100%);">
+            <svg width="76" height="76" viewBox="0 0 100 100" fill="none" style="position: relative; z-index: 2;">
+              <!-- Canva-style "C" mark, 3D feel -->
+              <defs>
+                <linearGradient id="canvaGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                  <stop offset="100%" stop-color="#ffffff" stop-opacity="0.7"/>
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="38" stroke="url(#canvaGrad)" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="160 80" transform="rotate(135 50 50)"/>
+              <path d="M30 75l8-14M70 75l-8-14" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+            <div style="position:absolute; bottom: 8px; right: 10px; font-size: 9.5px; font-weight: 900; color: rgba(255,255,255,0.85); letter-spacing: 0.5px; z-index: 3;">CANVA PRO</div>
+          </div>`;
+      }
+      // Default gift icon
+      return `
+        <div class="gift-icon-wrap" style="background: linear-gradient(135deg, ${accent} 0%, ${shadeColor(accent, -30)} 100%);">
+          <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="position: relative; z-index: 2;">
+            <path d="M20 12v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8M2 7h20l-2 5H4L2 7zM12 22V7M12 7H8.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h3.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+          </svg>
+        </div>`;
+    }
+
+    // ─── REDEEM FLOW ─────────────────────────────
     function openRedeemModal(giftId) {
       haptic.medium();
       const gift = STATE.gifts.find(g => g.id === giftId);
       if (!gift) return;
-
       STATE.selectedGift = gift;
 
       document.getElementById('modal-gift-name').textContent = gift.name;
       document.getElementById('modal-gift-desc').textContent = gift.description || '';
-      document.getElementById('modal-gift-points').textContent = gift.points_cost;
+      document.getElementById('modal-gift-points').textContent = formatNumber(gift.points_cost);
 
       document.getElementById('overlay').classList.add('open');
       document.getElementById('redeem-modal').classList.add('open');
     }
-
     function closeRedeemModal() {
       document.getElementById('overlay').classList.remove('open');
       document.getElementById('redeem-modal').classList.remove('open');
@@ -784,33 +1200,215 @@
 
         haptic.success();
         closeRedeemModal();
-        showToast("🎉 Sovg'a so'rovi muvaffaqiyatli yuborildi!", 'success');
+        showToast("🎉 Sovg'a muvaffaqiyatli olindi!", 'success');
 
+        // Agar canva_pro_link bo'lsa — himoyalangan viewer ochiladi
+        if (res.has_view && res.view_token && res.redemption_id) {
+          STATE.activeRedemption = {
+            id: res.redemption_id,
+            view_token: res.view_token,
+            gift_name: STATE.selectedGift.name,
+            gift_type: STATE.selectedGift.gift_type
+          };
+          setTimeout(() => openProtectedViewer(), 600);
+        }
+
+        loadMyGifts();
       } catch (err) {
         haptic.error();
-        showToast(err.message || "Amalni bajarib bo'lmadi", 'error');
+        showToast(err.message || "Xatolik yuz berdi", 'error');
       } finally {
         setButtonLoading('btn-confirm-redeem', false);
       }
     }
 
+    // ─── MY GIFTS (Canva Pro ko'rish uchun) ──────
+    async function loadMyGifts() {
+      // Bu yerda foydalanuvchining olgan sovg'alari ro'yxati kerak.
+      // Hozircha client-side: localStorage'dan va redemption tracking orqali
+      // Backend alohida /api/my-redemptions endpointi bilan to'ldirilishi mumkin.
+      // Hozircha oddiy fallback:
+      try {
+        // Optional: agar backendda /api/my-redemptions mavjud bo'lsa
+        // const res = await apiCall('/api/my-redemptions', 'POST', { init_data: tg.initData });
+        // renderMyGifts(res.redemptions);
+        renderMyGiftsFallback();
+      } catch (err) {
+        renderMyGiftsFallback();
+      }
+    }
+
+    function renderMyGiftsFallback() {
+      const container = document.getElementById('mygifts-list');
+      if (STATE.activeRedemption) {
+        container.innerHTML = renderMyGiftCard(STATE.activeRedemption);
+      } else {
+        container.innerHTML = `
+          <div class="liquid-glass p-8 text-center space-y-3">
+            <div class="icon-3d mx-auto" style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8">
+                <path d="M21 8a2 2 0 00-2-2H5a2 2 0 00-2 2m18 0v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8m18 0H3"/>
+              </svg>
+            </div>
+            <h4 class="font-bold text-white">Hozircha sovg'alar yo'q</h4>
+            <p class="text-[12px] text-white/50 leading-relaxed">Do'kondan sovg'a olganingizdan so'ng, u shu yerda ko'rinadi.</p>
+          </div>`;
+      }
+    }
+
+    function renderMyGiftCard(redemption) {
+      const isCanva = redemption.gift_type === 'canva_pro_link';
+      const accent = isCanva ? '#7B61FF' : '#0A84FF';
+      const giftName = redemption.gift_name || 'Canva Pro';
+      return `
+        <div class="liquid-glass p-5 space-y-4">
+          <div class="gift-icon-wrap" style="background: linear-gradient(135deg, ${accent} 0%, ${shadeColor(accent, -30)} 100%); height: 110px;">
+            ${isCanva
+              ? `<svg width="60" height="60" viewBox="0 0 100 100" fill="none" style="position: relative; z-index: 2;">
+                  <circle cx="50" cy="50" r="38" stroke="white" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="160 80" transform="rotate(135 50 50)" opacity="0.95"/>
+                </svg>`
+              : `<svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="position: relative; z-index: 2;">
+                  <path d="M20 12v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8M2 7h20l-2 5H4L2 7zM12 22V7M12 7H8.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h3.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+                </svg>`
+            }
+          </div>
+          <div class="space-y-1.5 z-10">
+            <div class="flex items-start justify-between gap-2">
+              <h4 class="font-bold text-[15px] text-white">${escapeHTML(giftName)}</h4>
+              ${isCanva
+                ? `<span class="px-2.5 py-1 rounded-lg text-[9.5px] font-extrabold uppercase tracking-wider shrink-0" style="background: rgba(123,97,255,0.18); border: 1px solid rgba(123,97,255,0.4); color: #BF9CFF;">🔒</span>`
+                : `<span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold shrink-0" style="background: rgba(48,209,88,0.15); border: 1px solid rgba(48,209,88,0.3); color: #30D158;">Faol</span>`
+              }
+            </div>
+            <p class="text-[12px] text-white/45">${isCanva ? 'Canva Pro havolasi — faqat ilova ichida ko\'rish mumkin' : 'Sovg\'angiz tayyor'}</p>
+          </div>
+          ${isCanva
+            ? `<button onclick="reopenMyProtectedGift()" class="btn-blue w-full py-3.5 rounded-2xl text-[12.5px] flex items-center justify-center gap-1.5 z-10">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>Havolani ko'rish</span>
+              </button>`
+            : `<div class="text-center text-[11px] text-white/40 z-10">Admin siz bilan bog'lanadi</div>`
+          }
+        </div>`;
+    }
+
+    function reopenMyProtectedGift() {
+      if (STATE.activeRedemption) openProtectedViewer();
+    }
+
+    // ─── PROTECTED VIEWER (Canva Pro) ─────────────
+    function openProtectedViewer() {
+      if (!STATE.activeRedemption) return;
+      haptic.medium();
+      document.getElementById('protected-gift-name').textContent = STATE.activeRedemption.gift_name || 'Canva Pro';
+      document.getElementById('overlay-protected').classList.add('open');
+      document.getElementById('protected-viewer').classList.add('open');
+      // Backend'dan content olish
+      loadProtectedContent();
+    }
+
+    function closeProtectedViewer() {
+      document.getElementById('overlay-protected').classList.remove('open');
+      document.getElementById('protected-viewer').classList.remove('open');
+      if (STATE.protectedCountdown) {
+        clearInterval(STATE.protectedCountdown);
+        STATE.protectedCountdown = null;
+      }
+    }
+
+    async function loadProtectedContent() {
+      const box = document.getElementById('protected-content-box');
+      // Eski overlay div ni tozalash
+      const overlay = box.querySelector('.protected-overlay');
+      try {
+        const res = await apiCall('/api/gift-view', 'POST', {
+          init_data: tg.initData,
+          view_token: STATE.activeRedemption.view_token,
+          redemption_id: STATE.activeRedemption.id
+        });
+        STATE.protectedContent = res.content;
+        // Linkni oddiy text ko'rinishida ko'rsatamiz, lekin select/contextmenu bloklangan
+        box.firstChild && box.firstChild.nodeType === 3 && box.removeChild(box.firstChild);
+        const textNode = document.createTextNode(res.content);
+        box.insertBefore(textNode, overlay);
+        document.getElementById('protected-remaining').textContent = `Ko'rish: ${res.remaining_views}/5`;
+        // Countdown timer
+        startCountdown(res.expires_in);
+      } catch (err) {
+        const textNode = document.createTextNode("⚠️ " + (err.message || "Yuklanmadi"));
+        box.insertBefore(textNode, overlay);
+        document.getElementById('btn-open-protected').disabled = true;
+        document.getElementById('btn-open-protected').style.opacity = 0.4;
+      }
+    }
+
+    function startCountdown(seconds) {
+      if (STATE.protectedCountdown) clearInterval(STATE.protectedCountdown);
+      let remaining = seconds;
+      const el = document.getElementById('protected-expires');
+      function tick() {
+        if (remaining <= 0) {
+          el.textContent = 'Muddati tugadi';
+          clearInterval(STATE.protectedCountdown);
+          STATE.protectedCountdown = null;
+          document.getElementById('btn-open-protected').disabled = true;
+          document.getElementById('btn-open-protected').style.opacity = 0.4;
+          return;
+        }
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        el.textContent = `Muddati: ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        remaining--;
+      }
+      tick();
+      STATE.protectedCountdown = setInterval(tick, 1000);
+    }
+
+    function openProtectedLink() {
+      if (!STATE.protectedContent) {
+        haptic.warning();
+        showToast("Havola hali tayyor emas", 'warning');
+        return;
+      }
+      haptic.medium();
+      // Brauzerda ochish — tg.openLink orqali
+      try {
+        tg.openLink(STATE.protectedContent);
+      } catch (e) {
+        // fallback
+        window.open(STATE.protectedContent, '_blank');
+      }
+    }
+
+    // ─── REFERRAL ────────────────────────────────
+    function renderDashboard() {
+      if (!STATE.user) return;
+      const name = STATE.user.first_name || "Foydalanuvchi";
+      const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+      document.getElementById('user-avatar').textContent = initials;
+      document.getElementById('user-name').textContent = name;
+      document.getElementById('user-username').textContent = STATE.user.username ? `@${STATE.user.username}` : '';
+      document.getElementById('balance-points').textContent = formatNumber(STATE.user.points);
+      document.getElementById('stat-referrals').textContent = formatNumber(STATE.user.referral_count);
+      const refLink = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${STATE.user.telegram_id}`;
+      document.getElementById('ref-link-text').textContent = refLink;
+      determineUserRank();
+    }
+
     async function copyReferralLink() {
       haptic.light();
       const link = document.getElementById('ref-link-text').textContent;
-      
       try {
         await navigator.clipboard.writeText(link);
         showToast("✅ Havola nusxalandi!", 'success');
         haptic.success();
       } catch (err) {
         try {
-          tg.showPopup({
-            title: "Taklif havolasi",
-            message: link,
-            buttons: [{type: "close", text: "Yopish"}]
-          });
+          tg.showPopup({ title: "Havola", message: link, buttons: [{type: "close", text: "Yopish"}] });
         } catch(e) {
-          showToast("Havolani nusxalash imkoni bo'lmadi", 'error');
+          showToast("Nusxalash imkoni bo'lmadi", 'error');
         }
       }
     }
@@ -823,21 +1421,18 @@
       tg.openTelegramLink(shareUrl);
     }
 
+    // ─── SCREEN SWITCHING ────────────────────────
     function showScreen(screenId) {
       document.getElementById('screen-subscription').classList.add('hidden');
       document.getElementById('screen-main').classList.add('hidden');
       document.getElementById('screen-error').classList.add('hidden');
-      
-      if (screenId === 'subscription') {
-        document.getElementById('screen-subscription').classList.remove('hidden');
-      } else if (screenId === 'main') {
+      if (screenId === 'subscription') document.getElementById('screen-subscription').classList.remove('hidden');
+      else if (screenId === 'main') {
         document.getElementById('screen-main').classList.remove('hidden');
         tg.MainButton.setParams({
           text: "📤 Do'stlarni taklif qilish",
-          color: "#007AFF",
-          text_color: "#FFFFFF",
-          is_active: true,
-          is_visible: true
+          color: "#0A84FF", text_color: "#FFFFFF",
+          is_active: true, is_visible: true
         });
         tg.MainButton.onClick(shareReferralLink);
       } else if (screenId === 'error') {
@@ -846,111 +1441,43 @@
       }
     }
 
-    function renderDashboard() {
-      if (!STATE.user) return;
-      
-      const name = STATE.user.first_name || "Foydalanuvchi";
-      const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
-      document.getElementById('user-avatar').textContent = initials;
-      
-      document.getElementById('user-name').textContent = name;
-      document.getElementById('user-username').textContent = STATE.user.username ? `@${STATE.user.username}` : '';
-      
-      document.getElementById('balance-points').textContent = formatNumber(STATE.user.points);
-      document.getElementById('stat-referrals').textContent = formatNumber(STATE.user.referral_count);
-      
-      const refLink = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=r_${STATE.user.telegram_id}`;
-      document.getElementById('ref-link-text').textContent = refLink;
-
-      determineUserRank();
-    }
-
-    function determineUserRank() {
-      if (STATE.leaderboard.length === 0) return;
-      let rank = "-";
-      for (let i = 0; i < STATE.leaderboard.length; i++) {
-        const item = STATE.leaderboard[i];
-        if (STATE.user.username && item.username === `@${STATE.user.username}`) {
-          rank = item.rank;
-          break;
-        }
-      }
-      document.getElementById('stat-rank').textContent = rank !== "-" ? `#${rank}` : '-';
-    }
-
-    function renderLeaderboard() {
-      const container = document.getElementById('leaderboard-list');
-      container.innerHTML = '';
-        
-      if (STATE.leaderboard.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-xs text-white/30">Hozircha ma'lumotlar mavjud emas.</div>`;
-        return;
-      }
-      
-      STATE.leaderboard.forEach(item => {
-        const row = document.createElement('div');
-        row.className = "flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.04] text-xs relative overflow-hidden";
-        
-        let rankBadge = '';
-        if (item.rank === 1) {
-          rankBadge = `<span class="w-5.5 h-5.5 rounded-full bg-[#FFD700]/15 border border-[#FFD700]/30 text-[#FFD700] flex items-center justify-center font-extrabold text-[10px]">1</span>`;
-        } else if (item.rank === 2) {
-          rankBadge = `<span class="w-5.5 h-5.5 rounded-full bg-[#C0C0C0]/15 border border-[#C0C0C0]/30 text-[#C0C0C0] flex items-center justify-center font-extrabold text-[10px]">2</span>`;
-        } else if (item.rank === 3) {
-          rankBadge = `<span class="w-5.5 h-5.5 rounded-full bg-[#CD7F32]/15 border border-[#CD7F32]/30 text-[#CD7F32] flex items-center justify-center font-extrabold text-[10px]">3</span>`;
-        } else {
-          rankBadge = `<span class="w-5.5 h-5.5 rounded-full bg-white/5 border border-white/10 text-white/40 flex items-center justify-center font-bold text-[10px]">${item.rank}</span>`;
-        }
-        
-        const displayUsername = item.username ? `<span class="text-[9px] text-white/30 block">${item.username}</span>` : '';
-        
-        row.innerHTML = `
-          <div class="absolute inset-0 bg-white/[0.01]"></div>
-          <div class="flex items-center gap-3 z-10">
-            ${rankBadge}
-            <div class="flex flex-col">
-              <span class="font-bold text-white/90">${item.first_name}</span>
-              ${displayUsername}
-            </div>
-          </div>
-          <div class="text-right z-10">
-            <span class="font-extrabold text-white text-sm">${formatNumber(item.points)}</span>
-            <span class="text-[9px] text-white/30 block mt-0.5">${formatNumber(item.referral_count)} do'st</span>
-          </div>
-        `;
-        container.appendChild(row);
-      });
-
-      determineUserRank();
-    }
-
+    // ─── TOAST ───────────────────────────────────
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
-      
       const toast = document.createElement('div');
-      toast.className = `p-3.5 rounded-xl text-[11px] font-bold text-white flex items-center gap-3 shadow-xl border border-white/10 backdrop-blur-lg transition-all duration-300`;
-      
-      let borderLeft = 'border-l-4 border-l-iosBlue';
-      if (type === 'success') borderLeft = 'border-l-4 border-l-iosGreen';
-      else if (type === 'error') borderLeft = 'border-l-4 border-l-iosRed';
-      
-      toast.className += ` bg-spaceBg/95 ${borderLeft}`;
-      toast.textContent = message;
-      
+      toast.className = `toast-item p-3.5 rounded-2xl text-[12.5px] font-semibold text-white flex items-center gap-3 shadow-2xl border pointer-events-auto`;
+      toast.style.background = 'rgba(20, 20, 30, 0.92)';
+      toast.style.backdropFilter = 'blur(30px)';
+      toast.style.webkitBackdropFilter = 'blur(30px)';
+      let accent = '#0A84FF';
+      if (type === 'success') accent = '#30D158';
+      else if (type === 'error') accent = '#FF453A';
+      else if (type === 'warning') accent = '#FF9F0A';
+      toast.style.borderColor = 'rgba(255,255,255,0.1)';
+      toast.style.borderLeft = `4px solid ${accent}`;
+
+      // Icon
+      const iconMap = {
+        success: '<path d="M20 6L9 17l-5-5" stroke="#30D158" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+        error:   '<path d="M18 6L6 18M6 6l12 12" stroke="#FF453A" stroke-width="2.5" stroke-linecap="round"/>',
+        warning: '<path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FF9F0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+        info:    '<circle cx="12" cy="12" r="10" stroke="#0A84FF" stroke-width="2.5"/><path d="M12 16v-4M12 8h.01" stroke="#0A84FF" stroke-width="2.5" stroke-linecap="round"/>'
+      };
+      toast.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">${iconMap[type] || iconMap.info}</svg><span>${escapeHTML(message)}</span>`;
       container.appendChild(toast);
-      
       setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 300);
-      }, 2500);
+      }, 2800);
     }
 
+    // ─── UTIL ────────────────────────────────────
     function setButtonLoading(buttonId, isLoading) {
       const btn = document.getElementById(buttonId);
       const text = document.getElementById(`${buttonId}-text`);
       const spinner = document.getElementById(`${buttonId}-spinner`);
-      
       if (isLoading) {
         btn.style.pointerEvents = 'none';
         btn.style.opacity = '0.7';
@@ -966,9 +1493,7 @@
 
     function showErrorState(message) {
       const errorText = document.getElementById('error-message-text');
-      if (errorText) {
-        errorText.textContent = message;
-      }
+      if (errorText) errorText.textContent = message;
       showToast(message, 'error');
     }
 
@@ -981,11 +1506,34 @@
       return urlParams.get(name);
     }
 
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function shadeColor(hex, percent) {
+      // Hex rangni ochish/yorqinlashtirish
+      try {
+        let R = parseInt(hex.substring(1, 3), 16);
+        let G = parseInt(hex.substring(3, 5), 16);
+        let B = parseInt(hex.substring(5, 7), 16);
+        R = Math.min(255, Math.max(0, Math.floor(R * (100 + percent) / 100)));
+        G = Math.min(255, Math.max(0, Math.floor(G * (100 + percent) / 100)));
+        B = Math.min(255, Math.max(0, Math.floor(B * (100 + percent) / 100)));
+        return `#${R.toString(16).padStart(2,'0')}${G.toString(16).padStart(2,'0')}${B.toString(16).padStart(2,'0')}`;
+      } catch (e) { return hex; }
+    }
+
+    // ─── EVENTS ──────────────────────────────────
     document.getElementById('btn-join-channel').addEventListener('click', () => {
       haptic.medium();
       tg.openTelegramLink(CHANNEL_URL);
     });
-
     document.getElementById('btn-verify').addEventListener('click', verifySubscription);
     document.getElementById('btn-copy').addEventListener('click', copyReferralLink);
     document.getElementById('btn-share').addEventListener('click', shareReferralLink);
